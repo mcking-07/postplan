@@ -3,15 +3,23 @@
   "version": "0.0.0",
   "description": "a compatible service for publishing and sharing safe, static html files via the postplan cli.",
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "dev": "wrangler dev",
+    "lint": "eslint ."
+  },
   "author": "muzammil_07",
   "license": "MIT",
+  "dependencies": {
+    "hono": "4.13.3"
+  },
   "devDependencies": {
+    "@cloudflare/workers-types": "latest",
     "@eslint/js": "10.0.1",
     "eslint": "10.9.0",
     "globals": "17.4.0",
     "jiti": "2.6.1",
     "typescript": "5.8.3",
-    "typescript-eslint": "8.67.0"
+    "typescript-eslint": "8.67.0",
+    "wrangler": "latest"
   }
 }

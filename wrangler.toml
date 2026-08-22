@@ -1,0 +1,38 @@
+name = "postplan"
+main = "src/worker.ts"
+compatibility_date = "2025-06-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+preview_urls = false
+
+[dev]
+port = 9057
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
+persist = false
+
+[cache]
+enabled = false
+
+[placement]
+mode = "smart"
+
+[assets]
+directory = "./public"
+
+[[d1_databases]]
+binding = "DATABASE"
+database_name = "postplan"
+database_id = "placeholder-create-before-deploy"
+
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "postplan"

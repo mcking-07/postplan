@@ -8,13 +8,18 @@
       "name": "postplan",
       "version": "0.0.0",
       "license": "MIT",
+      "dependencies": {
+        "hono": "4.13.3"
+      },
       "devDependencies": {
+        "@cloudflare/workers-types": "latest",
         "@eslint/js": "10.0.1",
         "eslint": "10.9.0",
         "globals": "17.4.0",
         "jiti": "2.6.1",
         "typescript": "5.8.3",
-        "typescript-eslint": "8.67.0"
+        "typescript-eslint": "8.67.0",
+        "wrangler": "latest"
       }
     },
     "node_modules/@cloudflare/kv-asset-handler": {
