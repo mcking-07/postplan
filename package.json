@@ -6,6 +6,7 @@
   "scripts": {},
   "author": "muzammil_07",
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "typescript": "5.8.3"
+  }
 }
