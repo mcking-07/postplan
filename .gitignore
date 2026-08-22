@@ -1,3 +1,8 @@
+# agent files
+.prime/
+AGENTS.md
+CLAUDE.md
+
 # build files
 dist/
 
