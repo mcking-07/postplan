@@ -1,7 +1,9 @@
 name = "postplan"
 main = "src/worker.ts"
+
 compatibility_date = "2025-06-01"
 compatibility_flags = ["nodejs_compat"]
+
 workers_dev = false
 preview_urls = false
 
@@ -31,8 +33,12 @@ directory = "./public"
 [[d1_databases]]
 binding = "DATABASE"
 database_name = "postplan"
-database_id = "placeholder-create-before-deploy"
+database_id = "21063e10-fd1c-4ef7-9a29-15d7b67efbb8"
 
 [[r2_buckets]]
 binding = "STORAGE"
 bucket_name = "postplan"
+
+[vars]
+NODE_ENV = "production"
+PUBLIC_BASE_URL = "https://postplan.mcking.in"
