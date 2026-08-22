@@ -5,6 +5,7 @@
     "lib": ["ESNext"],
     "module": "Preserve",
     "moduleDetection": "force",
+    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers/types", "node"],
     "allowJs": true,
 
     // module resolution

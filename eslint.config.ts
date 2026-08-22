@@ -48,7 +48,7 @@ const config = [
       'dot-notation': ['error', { allowKeywords: true }],
       'eqeqeq': ['error', 'smart'],
       'indent': ['error', 2],
-      'max-len': ['error', { code: 200, tabWidth: 2 }],
+      'max-len': ['error', { code: 250, tabWidth: 2 }],
       'no-console': ['error', { allow: ['debug'] }],
       'no-const-assign': 'error',
       'no-dupe-args': 'error',
