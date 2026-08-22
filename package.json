@@ -1,0 +1,11 @@
+{
+  "name": "postplan",
+  "version": "0.0.0",
+  "description": "a compatible service for publishing and sharing safe, static html files via the postplan cli.",
+  "type": "module",
+  "scripts": {},
+  "author": "muzammil_07",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
