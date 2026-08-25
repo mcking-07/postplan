@@ -1,0 +1,17 @@
+name = "postplan-test"
+main = "src/worker.ts"
+
+compatibility_date = "2025-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+[dev]
+port = 9057
+
+[[d1_databases]]
+binding = "DATABASE"
+database_name = "postplan-test"
+database_id = "00000000-0000-0000-0000-000000000001"
+
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "postplan-test"
