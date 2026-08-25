@@ -1,0 +1,11 @@
+NODE_ENV=development
+
+ADMIN_EMAILS="email@example.com,another-email@example.com"
+DEVELOPER_EMAIL=email@example.com
+
+PUBLIC_BASE_URL=http://localhost:9057
+
+# production only (set as worker secrets)
+
+# CF_ACCESS_TEAM_DOMAIN=team.cloudflareaccess.com
+# CF_ACCESS_AUDIENCE=access-audience-tag
