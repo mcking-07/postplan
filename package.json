@@ -5,21 +5,31 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "lint": "eslint ."
+    "deploy": "wrangler deploy",
+    "lint": "eslint .",
+    "test": "vitest",
+    "db:migrate:local": "wrangler d1 migrations apply postplan --local",
+    "db:migrate:remote": "wrangler d1 migrations apply postplan --remote"
   },
   "author": "muzammil_07",
   "license": "MIT",
   "dependencies": {
-    "hono": "4.13.3"
+    "hono": "4.13.3",
+    "nanoid": "5.1.16",
+    "parse5": "7.3.0",
+    "safe-wrapper": "4.2.0"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.22.0",
     "@cloudflare/workers-types": "latest",
     "@eslint/js": "10.0.1",
+    "@types/node": "latest",
     "eslint": "10.9.0",
     "globals": "17.4.0",
     "jiti": "2.6.1",
     "typescript": "5.8.3",
     "typescript-eslint": "8.67.0",
+    "vitest": "4.1.11",
     "wrangler": "latest"
   }
 }
