@@ -1,6 +1,6 @@
 {
   "name": "postplan",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "a compatible service for publishing and sharing safe, static html files via the postplan cli.",
   "type": "module",
   "scripts": {
