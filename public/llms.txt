@@ -18,6 +18,8 @@ Static HTML draft publishing for agents.
 3. Open https://postplan.mcking.in/cli/auth in the user's browser. Ask them to generate an API key and paste it back. If the browser does not open, share the link and ask them to open it manually.
 4. Run: `postplan auth set <pasted-key> --api-url https://postplan.mcking.in`
 
+If the skill files already exist, re-run the curl commands from step 2. Diff before overwriting to preserve any local changes.
+
 ## Immediate Usage
 
 If the skill is not loaded yet, use these instructions directly.
