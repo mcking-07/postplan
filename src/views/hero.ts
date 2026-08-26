@@ -5,7 +5,7 @@ import { escape } from './helpers';
 const setup_prompt = 'read and follow the instructions at https://postplan.mcking.in/llms.txt and set up postplan on this machine.';
 
 const setup_agents = ['claude', 'codex', 'cursor', 'opencode'];
-const setup_icons = setup_agents.map(agent => `<img src="/icons/${agent}.svg" alt="">`).join('');
+const setup_icons = setup_agents.map(agent => `<img src="/icons/${agent}.svg" alt="${agent}">`).join('');
 
 const setup_prompt_handler = [
   'navigator.clipboard.writeText(this.dataset.prompt)',
@@ -15,6 +15,7 @@ const setup_prompt_handler = [
 
 const render_hero = () => standalone('postplan', 'authenticated static html publishing for agents.', hero_styles, `
   <div class="hero">
+    <a href="https://github.com/mcking-07/postplan" class="source" target="_blank" rel="noopener noreferrer"><img src="/icons/github.svg" alt="github"></a>
     <div class="setup-wrap">
       <span id="setup-prompt-tooltip" class="setup-tooltip setup-tooltip-hover" role="status">copies a setup prompt for your ai coding tool.</span>
       <span class="setup-tooltip setup-tooltip-click" role="status">setup prompt copied.</span>

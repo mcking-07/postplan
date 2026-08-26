@@ -647,6 +647,33 @@ const hero = `
   .hero .setup-wrap.copy-failed .setup-tooltip-hover {
     display: none;
   }
+
+  .hero .source {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    text-decoration: none;
+    z-index: 10;
+  }
+
+  .hero .source img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+    opacity: 0.5;
+    transition: opacity 0.18s;
+  }
+
+  .hero .source:hover img { opacity: 1; }
+
+  @media (max-width: ${layout.breakpoint}) {
+    .hero { padding: 1rem; }
+
+    .hero .source {
+      top: 1rem;
+      right: 1rem;
+    }
+  }
 `;
 
 const error_styles = [reset, base, centered, not_found].join('\n');
