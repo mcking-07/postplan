@@ -3,6 +3,7 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-orange)](https://workers.cloudflare.com)
 [![D1](https://img.shields.io/badge/D1-SQLite-teal)](https://developers.cloudflare.com/d1)
 [![R2](https://img.shields.io/badge/R2-Object_Store-blue)](https://developers.cloudflare.com/r2/)
+[![CI](https://github.com/mcking-07/postplan/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mcking-07/postplan/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/licenses/MIT)
 
 infrastructure and agent skills for publishing static html plans, specs, reports, mocks, and architecture notes, compatible with the [postplan](https://www.npmjs.com/package/postplan) cli.
