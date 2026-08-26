@@ -13,6 +13,21 @@
   },
   "author": "muzammil_07",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcking-07/postplan.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mcking-07/postplan/issues"
+  },
+  "homepage": "https://postplan.mcking.in",
+  "keywords": [
+    "postplan",
+    "cloudflare-workers",
+    "hono",
+    "html",
+    "publishing"
+  ],
   "dependencies": {
     "hono": "4.13.3",
     "nanoid": "5.1.16",
