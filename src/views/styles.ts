@@ -643,10 +643,10 @@ const hero = `
   }
 `;
 
-const not_found_styles = [reset, base, centered, not_found].join('\n');
+const error_styles = [reset, base, centered, not_found].join('\n');
 
 const hero_styles = [reset, base, centered, hero].join('\n');
 
 const page_styles = [reset, base, typography, header, content, tables, tags, buttons, forms, banners, tokens, components, responsive].join('\n');
 
-export { hero_styles, not_found_styles, page_styles };
+export { error_styles, hero_styles, page_styles };

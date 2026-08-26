@@ -7,7 +7,7 @@ import { error_handler } from './middlewares';
 import { configure } from './routes';
 import { bootstrap as bootstrap_services } from './services';
 import type { ApplicationEnvironmentType, EnvironmentType } from './types';
-import { render_not_found } from './views';
+import { render_error } from './views';
 
 const state = { router: undefined } as { router?: Hono<ApplicationEnvironmentType>; };
 
@@ -24,7 +24,7 @@ const bootstrap = (env: EnvironmentType) => {
   router.use(requestId());
 
   router.onError(error_handler);
-  router.notFound(() => responsify({ status: 404, html: render_not_found() }));
+  router.notFound(() => responsify({ status: 404, html: render_error(404, 'page not found.') }));
 
   configure(router);
   return router;

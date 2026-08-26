@@ -1,7 +1,7 @@
 import { loggerFor, responsify } from '../common';
 import { BaseError } from '../errors';
 import type { ErrorCodeType } from '../types';
-import { render_not_found } from '../views';
+import { render_error } from '../views';
 
 const logger = loggerFor('middlewares/error-handler');
 
@@ -24,13 +24,13 @@ const error_handler = (error: Error, context: { req: { path: string } }) => {
     const { code, message, payload } = error;
     const status = status_codes.get(code) ?? 500;
 
-    if (!is_api && code === 'NOT_FOUND') return responsify({ status: 404, html: render_not_found() });
+    if (!is_api) return responsify({ status, html: render_error(status, message) });
 
     const body = { ok: false, code, error: message, errors: payload?.errors, warnings: payload?.warnings };
     return responsify({ status, body });
   }
 
-  if (!is_api) return responsify({ status: 500, html: render_not_found() });
+  if (!is_api) return responsify({ status: 500, html: render_error(500, 'internal server error.') });
 
   return responsify({ status: 500, body: { ok: false, code: 'INTERNAL_ERROR', error: 'internal server error.' } });
 };
