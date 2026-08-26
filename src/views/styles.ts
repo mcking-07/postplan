@@ -74,13 +74,19 @@ const header = `
   }
 
   header .icon-link {
-    color: ${colors.muted};
     display: flex;
     align-items: center;
-    transition: color 0.1s;
   }
 
-  header .icon-link:hover { color: ${colors.text}; }
+  header .icon-link img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+    opacity: 0.5;
+    transition: opacity 0.18s;
+  }
+
+  header .icon-link:hover img { opacity: 1; }
 
   header .identity {
     position: relative;
@@ -602,8 +608,8 @@ const hero = `
   }
 
   .hero .setup-icons img {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 18px;
+    height: 18px;
     filter: brightness(0) invert(1);
     opacity: 0.75;
   }

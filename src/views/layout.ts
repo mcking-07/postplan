@@ -3,10 +3,6 @@ import { escape } from './helpers';
 import { page_styles } from './styles';
 import { colors } from './tokens';
 
-const keys_icon = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <polyline points="4 5 7 8 4 11"/><line x1="9" y1="11" x2="12" y2="11"/>
-</svg>`;
-
 const favicon = '/favicon.svg';
 
 const shell = ({ title, description, email, role, team, body }: ShellParamsType) => `<!DOCTYPE html>
@@ -24,7 +20,7 @@ const shell = ({ title, description, email, role, team, body }: ShellParamsType)
   <header><nav>
     <a href="/dashboard" class="brand">postplan</a>
     <span class="actions">
-      <a href="/cli/auth" class="icon-link" title="keys">${keys_icon}</a>
+      <a href="/cli/auth" class="icon-link" title="keys" aria-label="keys"><img src="/icons/keys.svg" alt="keys"></a>
       <span class="identity">
         <span class="avatar" tabindex="0">${escape(email[0] ?? '')}</span>
         <span class="dropdown">
