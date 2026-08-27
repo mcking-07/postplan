@@ -3,6 +3,14 @@ import { safe } from '../../common';
 import type { Database } from '../database';
 import type { DatabaseParamType } from '../../types';
 
+const resolve_page = (page: number, size: number, total: number) => {
+  const pages = Math.max(1, Math.ceil(total / size));
+  const clamped = Math.min(Math.max(1, page), pages);
+  const offset = (clamped - 1) * size;
+
+  return { pages, page: clamped, offset };
+};
+
 class Repository<Entity = Record<string, unknown>> {
   protected readonly database: Database;
   protected readonly table: string;
@@ -49,6 +57,15 @@ class Repository<Entity = Record<string, unknown>> {
   delete = safe(async (id: string) => {
     return this.database.run(`DELETE FROM ${this.table} WHERE id = ?`, [id]);
   });
+
+  paginate = async (page: number, size: number, order_by = 'updated_at') => {
+    const { count = 0 } = await this.database.get<{ count: number }>(`SELECT COUNT(*) AS count FROM ${this.table}`) ?? {};
+    const { pages, page: clamped, offset } = resolve_page(page, size, count);
+
+    const rows = await this.database.query<Entity>(`SELECT * FROM ${this.table} ORDER BY ${order_by} DESC LIMIT ? OFFSET ?`, [size, offset]);
+
+    return { rows, page: clamped, pages, total: count };
+  };
 }
 
 export { Repository };

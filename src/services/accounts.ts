@@ -9,9 +9,9 @@ class AccountsService {
     this.accounts = accounts;
   }
 
-  list = async () => {
-    logger.info('listing all accounts');
-    return this.accounts.read();
+  paginate = async (page: number, size: number) => {
+    logger.info(`paginating accounts, page [${page}] size [${size}]`);
+    return this.accounts.paginate(page, size);
   };
 
   promote = async (id: string, role: 'admin' | 'member') => {

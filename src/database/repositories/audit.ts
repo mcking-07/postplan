@@ -20,10 +20,6 @@ class AuditRepository extends Repository<AuditEntityType> {
     await this.database.run(query, values);
     return id;
   });
-
-  recent = safe(async (limit: number = 100) => {
-    return this.database.query<AuditEntityType>('SELECT * FROM audit_log ORDER BY created_at DESC LIMIT ?', [limit]);
-  });
 }
 
 export { AuditRepository };

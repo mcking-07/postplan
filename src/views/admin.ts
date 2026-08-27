@@ -1,5 +1,5 @@
 import type { AccountType, AdminParamsType, AuditEntryType, DraftType } from '../types';
-import { dim, heading, tag } from './fragments';
+import { dim, heading, pagination, tag } from './fragments';
 import { escape, format_date } from './helpers';
 import { shell } from './layout';
 
@@ -33,6 +33,7 @@ const resource_cell = (log: AuditEntryType) => {
 
 const account_item = (account: AccountType, current_email: string) => `<tr>
   <td>${escape(account.email)}</td>
+  <td class="dim">${escape(account.id)}</td>
   <td>${tag(account.role)}</td>
   <td>${format_date(account.created_at)}</td>
   <td>${promote_cell(account, current_email)}</td>
@@ -58,28 +59,33 @@ const render_admin = ({ email, role, accounts, drafts, logs, base, team }: Admin
   const title = 'postplan admin';
   const description = 'system administration.';
 
+  const page_params = { accounts_page: accounts.page, drafts_page: drafts.page, audit_page: logs.page };
+
   const accounts_table = `<table>
-    <thead><tr><th>Email</th><th>Role</th><th>Created</th><th></th></tr></thead>
-    <tbody>${accounts.map(account => account_item(account, email)).join('')}</tbody>
+    <thead><tr><th>Email</th><th>ID</th><th>Role</th><th>Created</th><th></th></tr></thead>
+    <tbody>${accounts.rows.map(account => account_item(account, email)).join('')}</tbody>
   </table>`;
 
   const drafts_table = `<table>
     <thead><tr><th>Title</th><th>Owner</th><th>Updated</th><th>Status</th><th></th></tr></thead>
-    <tbody>${drafts.map(draft => draft_item(draft, base)).join('')}</tbody>
+    <tbody>${drafts.rows.map(draft => draft_item(draft, base)).join('')}</tbody>
   </table>`;
 
   const audit_table = `<table>
     <thead><tr><th>Action</th><th>Account</th><th>Resource</th><th>When</th><th>Details</th></tr></thead>
-    <tbody>${logs.map(audit_item).join('')}</tbody>
+    <tbody>${logs.rows.map(audit_item).join('')}</tbody>
   </table>`;
 
   const body = `
-    ${heading('Accounts', accounts.length)}
+    ${heading('Accounts', accounts.total, 'accounts')}
     ${accounts_table}
-    ${heading('Drafts', drafts.length)}
+    ${pagination('accounts', accounts.page, accounts.pages, page_params)}
+    ${heading('Drafts', drafts.total, 'drafts')}
     ${drafts_table}
-    ${heading('Audit Log', logs.length)}
+    ${pagination('drafts', drafts.page, drafts.pages, page_params)}
+    ${heading('Audit Log', logs.total, 'audit')}
     ${audit_table}
+    ${pagination('audit', logs.page, logs.pages, page_params)}
   `;
 
   return shell({ title, description, email, role, team, body });

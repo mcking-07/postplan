@@ -82,9 +82,11 @@ class DraftsService {
     return { draft: normalize_draft(draft), rows: (rows ?? []).map(normalize_version) };
   };
 
-  all = async () => {
-    logger.info('listing all drafts');
-    return this.drafts.read().then(rows => rows.map(normalize_draft));
+  paginate = async (page: number, size: number) => {
+    logger.info(`paginating drafts, page [${page}] size [${size}]`);
+    const result = await this.drafts.paginate(page, size);
+
+    return { ...result, rows: result.rows.map(normalize_draft) };
   };
 
   remove = async (id: string, account_id: string) => {

@@ -6,4 +6,11 @@ type UnknownPayloadType = Record<string, unknown>;
 
 type AccountRoleType = 'admin' | 'member';
 
-export type { AccountRoleType, NullableType, DatabaseParamType, UnknownPayloadType };
+type PageType<Value> = {
+  rows: Value[];
+  page: number;
+  pages: number;
+  total: number;
+};
+
+export type { AccountRoleType, NullableType, DatabaseParamType, PageType, UnknownPayloadType };

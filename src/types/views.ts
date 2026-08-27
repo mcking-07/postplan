@@ -1,5 +1,5 @@
 import type { AccountType } from './account';
-import type { AccountRoleType } from './shared';
+import type { AccountRoleType, PageType } from './shared';
 import type { ApiKeySummaryType } from './api-key';
 import type { AuditEntryType } from './audit';
 import type { DraftGroupType, DraftType } from './draft';
@@ -40,9 +40,9 @@ type KeysParamsType = {
 type AdminParamsType = {
   email: string;
   role: AccountRoleType;
-  accounts: AccountType[];
-  drafts: DraftType[];
-  logs: AuditEntryType[];
+  accounts: PageType<AccountType>;
+  drafts: PageType<DraftType>;
+  logs: PageType<AuditEntryType>;
   base: string;
   team?: string;
 };

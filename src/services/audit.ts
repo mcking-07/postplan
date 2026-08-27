@@ -29,13 +29,11 @@ class AuditService {
     return id;
   };
 
-  recent = async (limit = 100) => {
-    logger.info(`fetching recent audit entries, limit [${limit}]`);
+  paginate = async (page: number, size: number) => {
+    logger.info(`paginating audit entries, page [${page}] size [${size}]`);
+    const result = await this.audit.paginate(page, size, 'created_at');
 
-    const [error, entries] = await this.audit.recent(limit);
-    if (error) throw error;
-
-    return (entries ?? []).map(normalize_audit);
+    return { ...result, rows: result.rows.map(normalize_audit) };
   };
 }
 

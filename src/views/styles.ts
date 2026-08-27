@@ -465,6 +465,22 @@ const components = `
     max-width: 250px;
   }
 
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: ${spacing.gap};
+    margin-top: ${spacing.gap};
+    font-size: ${fonts.xs};
+  }
+
+  .pagination a {
+    color: ${colors.muted};
+    text-decoration: none;
+  }
+
+  .pagination a:hover { color: ${colors.white}; }
+
   .log-meta .tip {
     display: block;
     overflow: hidden;

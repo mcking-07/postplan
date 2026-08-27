@@ -19,9 +19,16 @@ class AdminController {
     const drafts_service = this.get_drafts_service();
     const audit_service = this.get_audit_service();
 
-    const accounts = await accounts_service.list();
-    const drafts = await drafts_service.all();
-    const logs = await audit_service.recent(50);
+    const page = {
+      accounts: Math.max(1, Number(context.req.query('accounts_page')) || 1),
+      drafts: Math.max(1, Number(context.req.query('drafts_page')) || 1),
+      audit: Math.max(1, Number(context.req.query('audit_page')) || 1),
+      size: 10
+    };
+
+    const accounts = await accounts_service.paginate(page.accounts, page.size);
+    const drafts = await drafts_service.paginate(page.drafts, page.size);
+    const logs = await audit_service.paginate(page.audit, page.size);
 
     logger.info('serving admin dashboard');
     return responsify({
