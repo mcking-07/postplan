@@ -83,7 +83,7 @@ const bootstrap = (env: EnvironmentType) => {
   services.register('service:authentication', new AuthenticationService(services.resolve('database:accounts'), services.resolve('database:keys')));
   services.register('service:drafts', new DraftsService(services.resolve('database:drafts'), services.resolve('database:versions'), services.resolve('storage')));
   services.register('service:keys', new KeysService(services.resolve('database:keys')));
-  services.register('service:uploads', new UploadsService(services.resolve('database:drafts'), services.resolve('database:versions'), services.resolve('storage'), services.resolve('service:audit')));
+  services.register('service:uploads', new UploadsService(services.resolve('database:drafts'), services.resolve('database:versions'), services.resolve('storage')));
 
   services.seal();
   logger.info('services initialized');

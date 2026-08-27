@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { inbound, loggerFor, outbound, responsify } from '../common';
+import { inbound, loggerFor, outbound, responsify, schedule } from '../common';
 import { config } from '../config';
 import { BadRequest, ValidationFailed } from '../errors';
 import { validate } from '../policy';
@@ -10,6 +10,7 @@ const logger = loggerFor('controllers/uploads');
 
 class UploadController {
   private get_uploads_service = () => services.resolve('service:uploads');
+  private get_audit_service = () => services.resolve('service:audit');
 
   create = async (context: Context<BearerVariablesType>) => {
     const raw = await context.req.json().catch(() => {
@@ -32,6 +33,14 @@ class UploadController {
     const result = await service.upload({
       request: body, account_id: account.id, api_key_id: key.id, source_ip: context.req.header('x-real-ip') ?? context.req.header('cf-connecting-ip'), user_agent: context.req.header('user-agent'), request_id: context.get('requestId'),
     }, validation);
+
+    const audit = this.get_audit_service();
+    schedule(context, audit.record({
+      account_id: account.id, api_key_id: key.id, action: result.status === 200 ? 'draft.update' : 'draft.create',
+      resource_type: 'draft', resource_id: result.body.draft_id,
+      metadata: { version_id: result.body.version_id, version_number: result.body.version_number, file_size: result.body.file_size },
+      source_ip: context.req.header('x-real-ip') ?? context.req.header('cf-connecting-ip'), user_agent: context.req.header('user-agent'),
+    }), 'upload audit');
 
     return responsify({ status: result.status, body: outbound(result.body) });
   };

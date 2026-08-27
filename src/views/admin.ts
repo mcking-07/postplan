@@ -28,10 +28,7 @@ const disable_cell = (draft: DraftType) => {
 
 const resource_cell = (log: AuditEntryType) => {
   if (!log.resource_type) return '';
-
-  const id = (log.resource_id ?? '').slice(0, 8);
-
-  return `${escape(log.resource_type)}:${escape(id)}`;
+  return `${escape(log.resource_type)}:${escape(log.resource_id ?? '')}`;
 };
 
 const account_item = (account: AccountType, current_email: string) => `<tr>
@@ -43,7 +40,7 @@ const account_item = (account: AccountType, current_email: string) => `<tr>
 
 const draft_item = (draft: DraftType, base: string) => `<tr>
   <td><a href="${base}/d/${draft.id}" target="_blank" rel="noopener noreferrer">${escape(draft.title)}</a></td>
-  <td class="dim">${escape(draft.account_id.slice(0, 8))}</td>
+  <td class="dim">${escape(draft.account_id)}</td>
   <td>${format_date(draft.updated_at)}</td>
   <td>${draft.disabled_at ? tag('disabled') : tag('active')}</td>
   <td style="position:relative">${disable_cell(draft)}</td>
@@ -51,10 +48,10 @@ const draft_item = (draft: DraftType, base: string) => `<tr>
 
 const audit_item = (log: AuditEntryType) => `<tr>
   <td>${escape(log.action)}</td>
-  <td class="dim">${escape((log.account_id ?? '').slice(0, 8))}</td>
+  <td class="dim">${escape(log.account_id ?? '')}</td>
   <td class="dim">${resource_cell(log)}</td>
   <td>${format_date(log.created_at)}</td>
-  <td class="log-meta">${escape(log.metadata !== '{}' ? log.metadata : '')}</td>
+  <td class="log-meta"${log.metadata !== '{}' ? ` data-tip="${escape(log.metadata)}"` : ''}><span class="tip">${escape(log.metadata !== '{}' ? log.metadata : '')}</span></td>
 </tr>`;
 
 const render_admin = ({ email, role, accounts, drafts, logs, base, team }: AdminParamsType) => {

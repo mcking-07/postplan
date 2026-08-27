@@ -4,7 +4,6 @@ import { config } from '../config';
 import { NotFound } from '../errors';
 import type { DraftsRepository, VersionsRepository } from '../database';
 import type { Storage } from '../storage';
-import type { AuditService } from './audit';
 import type { UnknownPayloadType, UploadContextType, ValidationResultType } from '../types';
 
 const logger = loggerFor('services/uploads');
@@ -13,12 +12,10 @@ class UploadsService {
   private readonly drafts: DraftsRepository;
   private readonly versions: VersionsRepository;
   private readonly storage: Storage;
-  private readonly audit: AuditService;
-  constructor(drafts: DraftsRepository, versions: VersionsRepository, storage: Storage, audit: AuditService) {
+  constructor(drafts: DraftsRepository, versions: VersionsRepository, storage: Storage) {
     this.drafts = drafts;
     this.versions = versions;
     this.storage = storage;
-    this.audit = audit;
   }
 
   upload = async (context: UploadContextType, validation: ValidationResultType) => {
@@ -51,16 +48,12 @@ class UploadsService {
     });
     if (set_error) throw set_error;
 
-    void this.audit.record({
-      account_id, api_key_id, action: existing ? 'draft.update' : 'draft.create', resource_type: 'draft', resource_id: resolved, metadata: { version_id, version_number, file_size: size }, source_ip, user_agent,
-    });
-
     logger.info(`uploaded draft [${resolved}] version [${version_number}]`);
 
     return {
       status: existing ? 200 : 201,
       body: {
-        ok: true, draft_id: resolved, version_id, version_number, title, public_url: `${config.base}/d/${resolved}`, raw_url: `${config.base}/d/${resolved}/raw`, warnings: validation.warnings, request_id,
+        ok: true, draft_id: resolved, version_id, version_number, title, file_size: size, public_url: `${config.base}/d/${resolved}`, raw_url: `${config.base}/d/${resolved}/raw`, warnings: validation.warnings, request_id,
       },
     };
   };

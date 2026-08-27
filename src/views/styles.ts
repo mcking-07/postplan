@@ -459,13 +459,38 @@ const components = `
   .disable-pop input { width: 220px; }
 
   .log-meta {
+    position: relative;
     font-size: ${fonts.xxs};
     color: ${colors.dim};
     max-width: 250px;
+  }
+
+  .log-meta .tip {
+    display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    cursor: default;
   }
+
+  .log-meta[data-tip]::after {
+    content: attr(data-tip);
+    display: none;
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    margin-bottom: 8px;
+    background: ${colors.surface};
+    border: 1px solid ${colors.border};
+    padding: 6px 10px;
+    font-size: ${fonts.xs};
+    color: ${colors.text};
+    white-space: nowrap;
+    z-index: 10;
+    line-height: 1.4;
+  }
+
+  .log-meta[data-tip]:hover::after { display: block; }
 `;
 
 const responsive = `
