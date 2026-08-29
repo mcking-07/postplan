@@ -86,4 +86,9 @@ type SetVersionParamsType = {
   repo_host?: string;
 };
 
-export type { DraftEntityType, DraftGroupType, DraftSummaryRowType, DraftSummaryType, DraftType, ResolvedDraftType, SetVersionParamsType };
+type ResolveOptionsType = {
+  version?: number;
+  unfiltered?: boolean;
+};
+
+export type { DraftEntityType, DraftGroupType, DraftSummaryRowType, DraftSummaryType, DraftType, ResolvedDraftType, ResolveOptionsType, SetVersionParamsType };

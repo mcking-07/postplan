@@ -8,6 +8,10 @@ class DraftsRepository extends Repository<DraftEntityType> {
     super(database, 'drafts');
   }
 
+  find_by_id = safe(async (id: string) => {
+    return this.database.get<DraftEntityType>('SELECT * FROM drafts WHERE id = ?', [id]);
+  });
+
   find_public = safe(async (id: string) => {
     return this.database.get<DraftEntityType>('SELECT * FROM drafts WHERE id = ? AND deleted_at IS NULL AND disabled_at IS NULL', [id]);
   });

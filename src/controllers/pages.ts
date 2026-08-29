@@ -32,7 +32,7 @@ class PageController {
     const service = this.get_drafts_service();
     logger.info(`serving draft [${id}] version [${number}]`);
 
-    const { draft, version, html } = await service.resolve(id, number);
+    const { draft, version, html } = await service.resolve(id, { version: number });
     const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
 
     return responsify({ status: 200, html, headers }, { cache: true, csp: true });

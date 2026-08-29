@@ -3,7 +3,7 @@ import { config } from '../config';
 import { NotFound } from '../errors';
 import type { DraftsRepository, VersionsRepository } from '../database';
 import type { Storage } from '../storage';
-import type { DraftEntityType, DraftType, DraftVersionEntityType, DraftVersionType, ResolvedDraftType } from '../types';
+import type { DraftEntityType, DraftType, DraftVersionEntityType, DraftVersionType, ResolveOptionsType, ResolvedDraftType } from '../types';
 
 const logger = loggerFor('services/drafts');
 
@@ -44,11 +44,11 @@ class DraftsService {
     this.storage = storage;
   }
 
-  resolve = async (id: string, number?: number): Promise<ResolvedDraftType> => {
-    const [draft_error, draft] = await this.drafts.find_public(id);
+  resolve = async (id: string, options: ResolveOptionsType = {}): Promise<ResolvedDraftType> => {
+    const [draft_error, draft] = options.unfiltered ? await this.drafts.find_by_id(id) : await this.drafts.find_public(id);
     if (draft_error || !draft) throw new NotFound('draft not found.');
 
-    const version = await this.find_version_entity(draft, number);
+    const version = await this.find_version_entity(draft, options.version);
 
     const [storage_error, html] = await this.storage.get(version.object_key);
     if (storage_error || !html) throw new NotFound('version content not found.');
@@ -107,16 +107,16 @@ class DraftsService {
     return disabled;
   };
 
-  private find_version_entity = async (draft: DraftEntityType, number?: number): Promise<DraftVersionEntityType> => {
-    if (number) return this.find_version_by_number(draft.id, number);
+  private find_version_entity = async (draft: DraftEntityType, version?: number): Promise<DraftVersionEntityType> => {
+    if (version) return this.find_version_by_number(draft.id, version);
     return this.find_current_version(draft);
   };
 
-  private find_version_by_number = async (draft_id: string, number: number): Promise<DraftVersionEntityType> => {
-    const [error, version] = await this.versions.find_by_number(draft_id, number);
-    if (error || !version) throw new NotFound('version not found.');
+  private find_version_by_number = async (draft_id: string, version: number): Promise<DraftVersionEntityType> => {
+    const [error, found] = await this.versions.find_by_number(draft_id, version);
+    if (error || !found) throw new NotFound('version not found.');
 
-    return version;
+    return found;
   };
 
   private find_current_version = async (draft: DraftEntityType): Promise<DraftVersionEntityType> => {
