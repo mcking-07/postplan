@@ -37,6 +37,35 @@ class AdminController {
     });
   };
 
+  preview = async (context: Context<AccessVariablesType>) => {
+    const draft_id = context.req.param('id');
+    if (!draft_id) return context.redirect('/admin');
+
+    const drafts_service = this.get_drafts_service();
+    logger.info(`admin previewing draft [${draft_id}]`);
+
+    const { draft, version, html } = await drafts_service.resolve(draft_id, { unfiltered: true });
+    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
+
+    return responsify({ status: 200, html, headers }, { csp: true });
+  };
+
+  version = async (context: Context<AccessVariablesType>) => {
+    const draft_id = context.req.param('id');
+    if (!draft_id) return context.redirect('/admin');
+
+    const number = Number(context.req.param('number'));
+    if (!Number.isInteger(number) || number < 1) return context.redirect('/admin');
+
+    const drafts_service = this.get_drafts_service();
+    logger.info(`admin previewing draft [${draft_id}] version [${number}]`);
+
+    const { draft, version, html } = await drafts_service.resolve(draft_id, { version: number, unfiltered: true });
+    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
+
+    return responsify({ status: 200, html, headers }, { csp: true });
+  };
+
   promote = async (context: Context<AccessVariablesType>) => {
     const admin = context.get('account');
     const target = context.req.param('id');

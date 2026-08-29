@@ -39,8 +39,10 @@ const configure = (router: Hono<ApplicationEnvironmentType>) => {
 
   // admin
   router.get('/admin', require_access(), require_admin(), controllers.admin.serve);
+  router.get('/admin/d/:id/version/:number', require_access(), require_admin(), controllers.admin.version);
+  router.get('/admin/d/:id', require_access(), require_admin(), controllers.admin.preview);
   router.post('/admin/accounts/:id/promote', require_access(), require_admin(), controllers.admin.promote);
-  router.post('/admin/drafts/:id/disable', require_access(), require_admin(), controllers.admin.disable);
+  router.post('/admin/d/:id/disable', require_access(), require_admin(), controllers.admin.disable);
 
   // bearer api
   router.get('/api/me', require_bearer(), controllers.auth.me);
