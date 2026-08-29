@@ -224,6 +224,40 @@ const tables = `
   }
 
   table.versions td:nth-child(2)[data-tip]:hover::after { display: block; }
+
+  table.drafts { table-layout: fixed; }
+  table.drafts th:nth-child(1) { width: 35%; }
+  table.drafts th:nth-child(2) { width: 15%; }
+  table.drafts th:nth-child(3) { width: 20%; }
+  table.drafts th:nth-child(4) { width: 15%; }
+  table.drafts th:nth-child(5) { width: 15%; }
+  table.drafts td:nth-child(1) { position: relative; }
+  table.drafts td:nth-child(1) .tip {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  table.drafts td:nth-child(1)::after {
+    content: attr(data-tip);
+    display: none;
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    margin-bottom: 8px;
+    max-width: 400px;
+    background: ${colors.surface};
+    border: 1px solid ${colors.border};
+    padding: 6px 10px;
+    font-size: ${fonts.xs};
+    color: ${colors.text};
+    white-space: normal;
+    z-index: 10;
+    line-height: 1.4;
+  }
+
+  table.drafts td:nth-child(1)[data-tip]:hover::after { display: block; }
   table.versions td:nth-child(4),
   table.versions td:nth-child(5) { white-space: nowrap; }
 `;
@@ -239,6 +273,7 @@ const tags = `
 
   .tag.admin { background: ${colors.amber_bg}; color: ${colors.amber}; }
   .tag.member { background: ${colors.surface}; color: #666; }
+  .tag.deleted { background: ${colors.surface}; color: ${colors.muted}; }
   .tag.disabled { background: ${colors.red_bg}; color: ${colors.red_tag}; }
   .tag.active { background: ${colors.green_bg}; color: ${colors.green}; }
 `;
@@ -283,6 +318,12 @@ const buttons = `
     background: ${colors.red_bg};
     border-color: ${colors.red_hover};
     color: ${colors.red_bright};
+  }
+
+  button:disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
   }
 `;
 

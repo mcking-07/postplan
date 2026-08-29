@@ -16,10 +16,10 @@ const promote_cell = (account: AccountType, current_email: string) => {
 };
 
 const disable_cell = (draft: DraftType) => {
-  if (draft.disabled_at) return '';
+  if (draft.deleted_at || draft.disabled_at) return '<button class="danger" disabled>disable</button>';
 
   return `<button class="danger" onclick="this.nextElementSibling.style.display='flex';this.style.display='none';this.nextElementSibling.querySelector('input').focus()">disable</button>
-  <form method="post" action="/admin/drafts/${draft.id}/disable" class="disable-pop" style="display:none">
+  <form method="post" action="/admin/d/${draft.id}/disable" class="disable-pop" style="display:none">
     <input type="text" name="reason" placeholder="reason (optional)">
     <button type="submit" class="danger">confirm</button>
     <button type="button" onclick="this.parentElement.style.display='none';this.parentElement.previousElementSibling.style.display=''">cancel</button>
@@ -40,10 +40,10 @@ const account_item = (account: AccountType, current_email: string) => `<tr>
 </tr>`;
 
 const draft_item = (draft: DraftType, base: string) => `<tr>
-  <td><a href="${base}/d/${draft.id}" target="_blank" rel="noopener noreferrer">${escape(draft.title)}</a></td>
+  <td data-tip="${escape(draft.title)}"><a href="${base}/admin/d/${draft.id}" target="_blank" rel="noopener noreferrer"><span class="tip">${escape(draft.title)}</span></a></td>
   <td class="dim">${escape(draft.account_id)}</td>
   <td>${format_date(draft.updated_at)}</td>
-  <td>${draft.disabled_at ? tag('disabled') : tag('active')}</td>
+  <td>${draft.deleted_at ? tag('deleted') : draft.disabled_at ? tag('disabled') : tag('active')}</td>
   <td style="position:relative">${disable_cell(draft)}</td>
 </tr>`;
 
@@ -66,7 +66,7 @@ const render_admin = ({ email, role, accounts, drafts, logs, base, team }: Admin
     <tbody>${accounts.rows.map(account => account_item(account, email)).join('')}</tbody>
   </table>`;
 
-  const drafts_table = `<table>
+  const drafts_table = `<table class="drafts">
     <thead><tr><th>Title</th><th>Owner</th><th>Updated</th><th>Status</th><th></th></tr></thead>
     <tbody>${drafts.rows.map(draft => draft_item(draft, base)).join('')}</tbody>
   </table>`;
