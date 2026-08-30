@@ -4,13 +4,13 @@ import { escape, format_date } from './helpers';
 import { shell } from './layout';
 
 const key_item = (key: ApiKeySummaryType) => `<tr>
-  <td>${escape(key.name)}</td>
+  <td data-tip="${escape(key.name)}"><span class="tip">${escape(key.name)}</span></td>
   <td>${format_date(key.created_at)}</td>
   <td>${key.last_used_at ? format_date(key.last_used_at) : dim('never')}</td>
   <td><form method="post" action="/cli/auth/revoke/${key.id}" style="display:inline"><button type="submit" class="danger">revoke</button></form></td>
 </tr>`;
 
-const keys_table = (active: ApiKeySummaryType[]) => `<table>
+const keys_table = (active: ApiKeySummaryType[]) => `<table class="keys">
   <thead><tr><th>Name</th><th>Created</th><th>Last used</th><th></th></tr></thead>
   <tbody>${active.map(key_item).join('')}</tbody>
 </table>`;

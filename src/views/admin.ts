@@ -32,7 +32,7 @@ const resource_cell = (log: AuditEntryType) => {
 };
 
 const account_item = (account: AccountType, current_email: string) => `<tr>
-  <td>${escape(account.email)}</td>
+  <td data-tip="${escape(account.email)}"><span class="tip">${escape(account.email)}</span></td>
   <td class="dim">${escape(account.id)}</td>
   <td>${tag(account.role)}</td>
   <td>${format_date(account.created_at)}</td>
@@ -61,7 +61,7 @@ const render_admin = ({ email, role, accounts, drafts, logs, base, team }: Admin
 
   const page_params = { accounts_page: accounts.page, drafts_page: drafts.page, audit_page: logs.page };
 
-  const accounts_table = `<table>
+  const accounts_table = `<table class="accounts">
     <thead><tr><th>Email</th><th>ID</th><th>Role</th><th>Created</th><th></th></tr></thead>
     <tbody>${accounts.rows.map(account => account_item(account, email)).join('')}</tbody>
   </table>`;
@@ -71,7 +71,7 @@ const render_admin = ({ email, role, accounts, drafts, logs, base, team }: Admin
     <tbody>${drafts.rows.map(draft => draft_item(draft, base)).join('')}</tbody>
   </table>`;
 
-  const audit_table = `<table>
+  const audit_table = `<table class="audit">
     <thead><tr><th>Action</th><th>Account</th><th>Resource</th><th>When</th><th>Details</th></tr></thead>
     <tbody>${logs.rows.map(audit_item).join('')}</tbody>
   </table>`;
