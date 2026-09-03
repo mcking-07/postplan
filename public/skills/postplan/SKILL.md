@@ -33,24 +33,36 @@ Before writing HTML, always read [references/style.md](references/style.md), the
 
 Every HTML document is prose. Apply these before uploading:
 
-- No AI vocabulary: additionally, crucial, delve, enhance, foster, leverage, utilize, landscape, tapestry, underscore. Use plain words.
-- No em dashes. Use periods or commas.
+- No AI vocabulary: additionally, comprehensive, crucial, delve, enhance, foster, leverage, robust, seamless, utilize, landscape, tapestry, underscore. Use plain words.
+- No em dashes, including in copied sketches. Use periods or commas.
 - No filler: "in order to" → "to", "it is important to note" → delete.
 - Active voice. "queries are validated" → "the compiler validates queries".
 - One idea per sentence. If a reader backtracks to parse it, split it.
-- Have opinions. Pick a recommendation, state tradeoffs, don't hedge.
-- Color carries meaning (severity, status, category), not decoration.
+- No bold-label lists (`<li><strong>Naming:</strong> ...`). Use a table with a heading row, or a subheading with a paragraph.
+- Have opinions. Pick a recommendation, state tradeoffs, do not hedge.
+- Call each thing by one name across the document. The service named `uploads` in the diagram is `uploads` in the table and the prose.
+- Color carries meaning (severity, status, category), not decoration. Never color alone: the word carries the status, the color reinforces it.
 - No cards-on-grey, no gradients, no emoji headers, no centered everything.
 
 ## Document Rules
 
 Create one complete static HTML document.
 
+Required:
+
+- `<html lang="en">` (or the document's language)
+- `<meta charset="utf-8">`
+- `<meta name="viewport" content="width=device-width, initial-scale=1">`
+- `<title>` that names the document
+- The default CSS from [references/style.md](references/style.md) in a `<style>` block, unless the user specified a style
+- Content as direct children of `<body>`. No wrapper `<div>`.
+
+Never add `maximum-scale`, `minimum-scale`, or `user-scalable=no` to the viewport meta. They block zoom for low-vision readers.
+
 Allowed:
 
 - Semantic HTML
 - Inline CSS or a `<style>` block
-- Normal document metadata (charset, viewport, title)
 - Links to ordinary HTTPS pages
 - Images from HTTPS or data URLs when necessary
 

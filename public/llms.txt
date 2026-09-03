@@ -26,7 +26,7 @@ If the skill is not loaded yet, use these instructions directly.
 
 ### Document Rules
 
-Create one complete static HTML document. Use semantic HTML with inline CSS or a `<style>` block.
+Create one complete static HTML document. Required: `<html lang>`, `<meta charset="utf-8">`, `<meta name="viewport" content="width=device-width, initial-scale=1">`, and a `<title>`. Never add `maximum-scale` or `user-scalable=no`. Use semantic HTML with inline CSS or a `<style>` block, and keep content as direct children of `<body>`. Prefer the default CSS from `skills/postplan/references/style.md`.
 
 Rejected (server returns 422): all `<script>` tags, inline event handlers, javascript/vbscript/file URLs, forms, iframes, embeds, objects, applets, `<base>`, `<link>`, meta refresh, `srcdoc` attributes, CSS `@import`/`expression()`/`behavior:`/`-moz-binding`. Maximum size: 512 KB.
 
@@ -52,10 +52,10 @@ curl --fail --silent --show-error --location --max-time 30 -o /tmp/postplan-<slu
 
 Base URL: https://postplan.mcking.in
 
-- POST /api/uploads — upload or update a draft (bearer auth)
-- GET /api/drafts — list drafts (bearer auth)
-- GET /api/me — account info (bearer auth)
-- GET /d/<id> — serve current version (public)
-- GET /d/<id>/version/<n> — serve specific version (public)
+- POST /api/uploads: upload or update a draft (bearer auth)
+- GET /api/drafts: list drafts (bearer auth)
+- GET /api/me: account info (bearer auth)
+- GET /d/<id>: serve current version (public)
+- GET /d/<id>/version/<n>: serve specific version (public)
 
 Full API details, HTML references, and document conventions are in the skill files.
