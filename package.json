@@ -29,7 +29,7 @@
     "publishing"
   ],
   "dependencies": {
-    "hono": "4.13.3",
+    "hono": "4.13.5",
     "nanoid": "5.1.16",
     "parse5": "7.3.0",
     "safe-wrapper": "4.2.0"
