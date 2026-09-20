@@ -70,6 +70,18 @@ Restart if the artifact has any three of these:
 - A header with a logo placeholder
 - A visual identity invented for this one artifact
 
+## Viewer Experience
+
+Apply these to every artifact:
+
+- Always include `<meta name="viewport" content="width=device-width, initial-scale=1">`.
+- Define colors as semantic CSS custom properties on `:root`. Name them by role (`--bg`, `--text`, `--border`, `--surface`), not by appearance (`--dark-gray`, `--light-blue`).
+- Default to dark mode. Override variables inside `@media (prefers-color-scheme: light)`. Never hardcode a single scheme.
+- Every interactive element must have a minimum 44px hit area on touch devices. Use padding, not inflated font sizes.
+- Every interactive element must have a visible `:focus-visible` outline. Replace the default ring if it clashes, but never remove it.
+- Use semantic elements (`<nav>`, `<section>`, `<button>`) and ARIA attributes where they apply. Do not use divs and spans for interactive controls.
+- Content that may exceed the viewport width (tables, code blocks, side-by-side comparisons, wide grids) must be individually scrollable. Wrap each instance in a `<div>` with `overflow-x: auto`. Apply the overflow to the wrapper, not to `<body>` or the page container. A `<pre>` can take `overflow-x: auto` directly without a wrapper.
+
 ## Upload
 
 Write the file inside the project directory. Use `plans/` if it exists, otherwise a gitignored scratchpad directory if one exists, otherwise create `.postplan/`. The CLI captures git metadata from the file's parent directory. Files outside a git repo lose git context.
