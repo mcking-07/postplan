@@ -2,7 +2,8 @@ import * as parse5 from 'parse5';
 import { safe } from '../common';
 import type { PolicyNodeType, ValidationContextType, ValidationResultType, WalkerEntryType } from '../types';
 
-const BLOCKED_TAGS = new Set(['script', 'form', 'iframe', 'object', 'embed', 'applet', 'base', 'link']);
+const BLOCKED_TAGS = new Set(['form', 'iframe', 'object', 'embed', 'applet', 'base', 'link']);
+const ALLOWED_SCRIPT_TYPES = new Set(['', 'text/javascript', 'application/javascript', 'module']);
 const BLOCKED_PROTOCOLS = new Set(['javascript:', 'vbscript:', 'file:']);
 const URL_ATTRIBUTES = new Set(['href', 'src', 'action', 'formaction', 'poster', 'srcdoc', 'xlink:href']);
 
@@ -15,7 +16,7 @@ const CSS_PATTERNS = [
 ];
 
 const MAX_DEPTH = 512;
-const DEFAULT_MAX_BYTES = 512 * 1024;
+const DEFAULT_MAX_BYTES = 2 * 1024 * 1024;
 
 const attrs = (node: PolicyNodeType) => node.attrs ?? [];
 const children = (node: PolicyNodeType) => node.childNodes ?? [];
@@ -79,6 +80,18 @@ const check_style = (node: PolicyNodeType): string[] => {
   return CSS_PATTERNS.filter(({ pattern }) => pattern.test(css)).map(({ message }) => message);
 };
 
+const check_script = (node: PolicyNodeType): string[] => {
+  const attributes = attrs(node);
+  const errors: string[] = [];
+
+  if (attributes.some(attribute => attribute.name.toLowerCase() === 'src')) errors.push('blocked external script source.');
+
+  const type = (attributes.find(attribute => attribute.name.toLowerCase() === 'type')?.value ?? '').trim().toLowerCase();
+  if (!ALLOWED_SCRIPT_TYPES.has(type)) errors.push(`blocked unsupported script type: ${type || 'empty'}.`);
+
+  return errors;
+};
+
 const check_meta = (node: PolicyNodeType): string[] => {
   const http_equiv = attrs(node).find(attribute => attribute.name.toLowerCase() === 'http-equiv');
 
@@ -114,9 +127,11 @@ const validate = (html: string, max_bytes = DEFAULT_MAX_BYTES): ValidationResult
     const tag = node.tagName?.toLowerCase();
 
     if (tag) {
-      if (BLOCKED_TAGS.has(tag)) {
-        errors.push(`blocked <${tag}> tag.`);
-        if (tag === 'script') context.has_inline_script = true;
+      if (BLOCKED_TAGS.has(tag)) errors.push(`blocked <${tag}> tag.`);
+
+      if (tag === 'script') {
+        context.has_inline_script = true;
+        errors.push(...check_script(node));
       }
 
       errors.push(...check_attributes(node));

@@ -29,7 +29,7 @@ const bootstrap = (env: EnvironmentType) => {
     environment,
     admins: required(env.ADMIN_EMAILS, 'ADMIN_EMAILS').split(',').map(email => email.trim().toLowerCase()).filter(Boolean),
     base: required(env.PUBLIC_BASE_URL, 'PUBLIC_BASE_URL'),
-    bytes: { maximum: 512 * 1024 },
+    bytes: { maximum: 2 * 1024 * 1024 },
     team: 'team' in cf ? cf.team : undefined,
     cloudflare: cf,
   });

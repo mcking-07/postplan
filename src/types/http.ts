@@ -6,7 +6,8 @@ type AsyncContextStoreType = {
 
 type ResponseOptionsType = {
   cache?: boolean;
-  csp?: boolean;
+  csp?: string;
+  coop?: boolean;
 };
 
 type HandlerResponseType = {

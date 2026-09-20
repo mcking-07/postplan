@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { loggerFor, responsify } from '../common';
+import { cspify, loggerFor, responsify } from '../common';
 import { NotFound } from '../errors';
 import { services } from '../services';
 import type { ApplicationEnvironmentType } from '../types';
@@ -19,7 +19,7 @@ class PageController {
     const { draft, version, html } = await service.resolve(id);
     const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
 
-    return responsify({ status: 200, html, headers }, { cache: true, csp: true });
+    return responsify({ status: 200, html, headers }, { cache: true, csp: await cspify(html), coop: true });
   };
 
   version = async (context: Context<ApplicationEnvironmentType>) => {
@@ -35,7 +35,7 @@ class PageController {
     const { draft, version, html } = await service.resolve(id, { version: number });
     const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
 
-    return responsify({ status: 200, html, headers }, { cache: true, csp: true });
+    return responsify({ status: 200, html, headers }, { cache: true, csp: await cspify(html), coop: true });
   };
 }
 

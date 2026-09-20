@@ -41,9 +41,12 @@ describe('worker routes', () => {
     expect(missing_html.status).toBe(400);
     await expect(missing_html.json()).resolves.toEqual({ ok: false, code: 'BAD_REQUEST', error: 'missing html field.' });
 
-    const blocked = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<script>alert(1)</script>' }) });
+    const blocked = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<iframe src="https://evil.example"></iframe>' }) });
     expect(blocked.status).toBe(422);
-    await expect(blocked.json()).resolves.toEqual({ ok: false, code: 'VALIDATION_FAILED', error: 'html validation failed.', errors: ['blocked <script> tag.'], warnings: ['no <title> found, a generic title will be used.'] });
+    await expect(blocked.json()).resolves.toEqual({ ok: false, code: 'VALIDATION_FAILED', error: 'html validation failed.', errors: ['blocked <iframe> tag.'], warnings: ['no <title> found, a generic title will be used.'] });
+
+    const accepted = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<html><head><title>Scripted</title></head><body><script>document.title = "x";</script></body></html>' }) });
+    expect(accepted.status).toBe(201);
 
     const inline_event = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<div onclick="alert(1)">Plan</div>' }) });
     expect(inline_event.status).toBe(422);

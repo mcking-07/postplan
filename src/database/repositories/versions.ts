@@ -28,7 +28,7 @@ class VersionsRepository extends Repository<DraftVersionEntityType> {
     ];
 
     const rows = await this.database.query<{ version_number: number }>(query, values);
-    if (!rows[0]) throw new NotFound('failed to create version');
+    if (!rows[0]) throw new NotFound('failed to create version.');
 
     return rows[0].version_number;
   });

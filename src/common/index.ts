@@ -1,5 +1,6 @@
 export { context_store } from './context-store';
 export { hash, random } from './crypto';
+export { cspify } from './csp';
 export { loggerFor } from './logger';
 export { responsify } from './response';
 export { safe } from './safe';

@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { loggerFor, responsify, sanitize, schedule } from '../common';
+import { cspify, loggerFor, responsify, sanitize, schedule } from '../common';
 import { config } from '../config';
 import { services } from '../services';
 import type { AccessVariablesType } from '../types';
@@ -47,7 +47,7 @@ class AdminController {
     const { draft, version, html } = await drafts_service.resolve(draft_id, { unfiltered: true });
     const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
 
-    return responsify({ status: 200, html, headers }, { csp: true });
+    return responsify({ status: 200, html, headers }, { csp: await cspify(html), coop: true });
   };
 
   version = async (context: Context<AccessVariablesType>) => {
@@ -63,7 +63,7 @@ class AdminController {
     const { draft, version, html } = await drafts_service.resolve(draft_id, { version: number, unfiltered: true });
     const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
 
-    return responsify({ status: 200, html, headers }, { csp: true });
+    return responsify({ status: 200, html, headers }, { csp: await cspify(html), coop: true });
   };
 
   promote = async (context: Context<AccessVariablesType>) => {
