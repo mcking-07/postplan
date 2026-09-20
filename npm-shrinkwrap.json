@@ -9,9 +9,9 @@
       "version": "1.0.0",
       "license": "MIT",
       "dependencies": {
-        "hono": "4.13.3",
-        "nanoid": "5.1.16",
-        "parse5": "7.3.0",
+        "hono": "4.13.8",
+        "nanoid": "6.0.1",
+        "parse5": "8.0.1",
         "safe-wrapper": "4.2.0"
       },
       "devDependencies": {
@@ -2435,12 +2435,12 @@
       }
     },
     "node_modules/entities": {
-      "version": "6.0.1",
-      "resolved": "https://registry.npmjs.org/entities/-/entities-6.0.1.tgz",
-      "integrity": "sha512-aN97NXWF6AWBTahfVOIrB/NShkzi5H7F9r1s9mD3cDj4Ko5f2qhhVoYMibXF7GlLveb/D2ioWay8lxI97Ven3g==",
+      "version": "8.1.0",
+      "resolved": "https://registry.npmjs.org/entities/-/entities-8.1.0.tgz",
+      "integrity": "sha512-kxL7msIffSuh9aaFAMD7rxAIuTRMAHMeBtgHW2yUdWw732ZNh4MehkF2gdjvtdmikkaIP9bFDDJOPlsvm7avrA==",
       "license": "BSD-2-Clause",
       "engines": {
-        "node": ">=0.12"
+        "node": ">=20.19.0"
       },
       "funding": {
         "url": "https://github.com/fb55/entities?sponsor=1"
@@ -2826,9 +2826,9 @@
       }
     },
     "node_modules/hono": {
-      "version": "4.13.3",
-      "resolved": "https://registry.npmjs.org/hono/-/hono-4.13.3.tgz",
-      "integrity": "sha512-r8AO2mYHoLxSHkgafNeC/BXyb2vWRxD3jem4Ts+ptav8oTG5FIRifAjuJEmZI4bSvvc2ns0GxmIYiZnHqN3mMw==",
+      "version": "4.13.8",
+      "resolved": "https://registry.npmjs.org/hono/-/hono-4.13.8.tgz",
+      "integrity": "sha512-/Gng7NfoykZl2pjukW5Z6+8Yxm3BPRf86GTbQnt0SbySkvax4fyL4H3HhY1cCpBGmiW9XDRFzRV+CXK2W8QudQ==",
       "license": "MIT",
       "engines": {
         "node": ">=16.9.0"
@@ -3279,9 +3279,9 @@
       "license": "MIT"
     },
     "node_modules/nanoid": {
-      "version": "5.1.16",
-      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-5.1.16.tgz",
-      "integrity": "sha512-kVrnsrJqMR8+oLJnGEmSWw9BivK5mt7H3FZatVRjrc5wGqFYuBxX1yG7+A7Gi5AefkX6t/oCkizcQgpu0cY1dQ==",
+      "version": "6.0.1",
+      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-6.0.1.tgz",
+      "integrity": "sha512-3wVS3i51pE2pi1k5FFL/95BGfVS0kSsvDVuGXHOtxox/TywUmtgq+3qiTOTbs9J7KfHaXPiN171k/A6dBnaXFw==",
       "funding": [
         {
           "type": "github",
@@ -3293,7 +3293,7 @@
         "nanoid": "bin/nanoid.js"
       },
       "engines": {
-        "node": "^18 || >=20"
+        "node": "^22 || ^24 || >=26"
       }
     },
     "node_modules/natural-compare": {
@@ -3368,12 +3368,12 @@
       }
     },
     "node_modules/parse5": {
-      "version": "7.3.0",
-      "resolved": "https://registry.npmjs.org/parse5/-/parse5-7.3.0.tgz",
-      "integrity": "sha512-IInvU7fabl34qmi9gY8XOVxhYyMyuH2xUNpb2q8/Y+7552KlejkRvqvD19nMoUW/uQGGbqNpA6Tufu5FL5BZgw==",
+      "version": "8.0.1",
+      "resolved": "https://registry.npmjs.org/parse5/-/parse5-8.0.1.tgz",
+      "integrity": "sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==",
       "license": "MIT",
       "dependencies": {
-        "entities": "^6.0.0"
+        "entities": "^8.0.0"
       },
       "funding": {
         "url": "https://github.com/inikulin/parse5?sponsor=1"
