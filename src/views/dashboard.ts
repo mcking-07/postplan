@@ -22,7 +22,7 @@ const render_dashboard = ({ email, role, grouped, base, team, has_keys }: Dashbo
     const body = `
       ${empty(`no drafts yet. ${message}`)}
       <p class="empty" style="padding-bottom: 0">publish a plan:</p>
-      ${copyable(`npx postplan upload ./plan.html --api-url ${base}`)}
+      ${copyable(`npx postplan upload ./index.html --api-url ${base}`)}
     `;
 
     return shell({ title, description, email, role, team, body });

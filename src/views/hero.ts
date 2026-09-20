@@ -13,7 +13,7 @@ const setup_prompt_handler = [
   '.catch(() => { this.parentElement.classList.add(\'copy-failed\'); setTimeout(() => { this.parentElement.classList.remove(\'copied\', \'copy-failed\'); this.blur() }, 2000) })',
 ].join('');
 
-const render_hero = () => standalone('postplan', 'authenticated static html publishing for agents.', hero_styles, `
+const render_hero = () => standalone('postplan', 'authenticated artifact publishing for agents.', hero_styles, `
   <div class="hero">
     <a href="https://github.com/mcking-07/postplan" class="source" target="_blank" rel="noopener noreferrer"><img src="/icons/github.svg" alt="github"></a>
     <div class="setup-wrap">
@@ -28,8 +28,8 @@ const render_hero = () => standalone('postplan', 'authenticated static html publ
       </button>
     </div>
     <div class="brand">postplan</div>
-    <p class="tagline">authenticated static html publishing for agents.</p>
-    <p class="detail">publish plans, specs, and reports directly from your agents.<br>version-controlled, access-gated, no infrastructure needed.</p>
+    <p class="tagline">authenticated artifact publishing for agents.</p>
+    <p class="detail">publish plans, reports, and interactive demos directly from your agents.<br>version-controlled, access-gated, sandboxed, no infrastructure needed.</p>
     <a href="/dashboard" class="cta">sign in →</a>
   </div>
 `);

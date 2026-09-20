@@ -6,15 +6,15 @@
 [![CI](https://github.com/mcking-07/postplan/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mcking-07/postplan/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/licenses/MIT)
 
-infrastructure and agent skills for publishing static html plans, specs, reports, mocks, and architecture notes, compatible with the [postplan](https://www.npmjs.com/package/postplan) cli.
+infrastructure and agent skills for publishing self-contained artifacts, compatible with the [postplan](https://www.npmjs.com/package/postplan) cli.
 
-![postplan provides agent skills and publishing infrastructure for static html documents](./assets/readme.svg)
+![postplan provides agent skills and publishing infrastructure for self-contained artifacts](./assets/readme.svg)
 
 ## overview
 
 agents are good at producing structured work, but a markdown response is often a poor format for reviewing plans, specs, reports, mocks, and architecture notes.
 
-static html gives those documents layout, diagrams, annotations, navigation, and visual structure. it creates a reviewable artifact that can be shared with teammates while pairing, discussing an implementation, or handing work off.
+self-contained html gives those artifacts layout, diagrams, interactivity, and visual structure. it creates a reviewable artifact that can be shared with teammates while pairing, discussing an implementation, or handing work off.
 
 the agent creates the document. postplan provides the agent skill and cloudflare workers infrastructure for publishing, storing, versioning, and sharing finished artifacts through a public url.
 
