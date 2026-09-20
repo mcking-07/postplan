@@ -3,3 +3,6 @@ Disallow: /
 Allow: /$
 Allow: /llms.txt
 Allow: /skills/
+Allow: /sitemap.xml
+
+Sitemap: https://postplan.mcking.in/sitemap.xml
