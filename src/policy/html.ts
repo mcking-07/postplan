@@ -2,21 +2,7 @@ import * as parse5 from 'parse5';
 import { safe } from '../common';
 import type { PolicyNodeType, ValidationContextType, ValidationResultType, WalkerEntryType } from '../types';
 
-const BLOCKED_TAGS = new Set(['form', 'iframe', 'object', 'embed', 'applet', 'base', 'link']);
-const ALLOWED_SCRIPT_TYPES = new Set(['', 'text/javascript', 'application/javascript', 'module']);
-const BLOCKED_PROTOCOLS = new Set(['javascript:', 'vbscript:', 'file:']);
-const URL_ATTRIBUTES = new Set(['href', 'src', 'action', 'formaction', 'poster', 'srcdoc', 'xlink:href']);
-
-const CSS_PATTERNS = [
-  { pattern: /@import/i, message: 'blocked @import rule.' },
-  { pattern: /expression\s*\(/i, message: 'blocked css expression().' },
-  { pattern: /behavior\s*:/i, message: 'blocked css behavior property.' },
-  { pattern: /-moz-binding\s*:/i, message: 'blocked -moz-binding property.' },
-  { pattern: /url\s*\(\s*['"]?\s*(?:javascript|vbscript|file):/i, message: 'blocked unsafe url in stylesheet.' },
-];
-
 const MAX_DEPTH = 512;
-const DEFAULT_MAX_BYTES = 2 * 1024 * 1024;
 
 const attrs = (node: PolicyNodeType) => node.attrs ?? [];
 const children = (node: PolicyNodeType) => node.childNodes ?? [];
@@ -45,64 +31,16 @@ const external_host = (value?: string): string | undefined => {
   return (url.protocol === 'http:' || url.protocol === 'https:') ? url.hostname.toLowerCase() : undefined;
 };
 
-const check_attributes = (node: PolicyNodeType): string[] => {
-  const errors: string[] = [];
-
-  for (const attribute of attrs(node)) {
-    const name = attribute.name.toLowerCase();
-    const value = attribute.value ?? '';
-
-    if (name.startsWith('on')) errors.push(`blocked inline event handler: ${name}.`);
-    if (name === 'srcdoc') errors.push('blocked srcdoc attribute.');
-
-    if (URL_ATTRIBUTES.has(name)) {
-      const normalized = value.replaceAll(/\s+/g, '').toLowerCase();
-
-      for (const protocol of BLOCKED_PROTOCOLS) {
-        if (normalized.startsWith(protocol)) {
-          errors.push(`blocked unsafe url in ${name} attribute.`);
-          break;
-        }
-      }
-    }
-
-    if (name === 'style' && /expression\s*\(|behavior\s*:|url\s*\(\s*javascript:/i.test(value)) {
-      errors.push('blocked unsafe inline style.');
-    }
-  }
-
-  return errors;
-};
-
-const check_style = (node: PolicyNodeType): string[] => {
-  const css = collect_text(node);
-
-  return CSS_PATTERNS.filter(({ pattern }) => pattern.test(css)).map(({ message }) => message);
-};
-
-const check_script = (node: PolicyNodeType): string[] => {
-  const attributes = attrs(node);
-  const errors: string[] = [];
-
-  if (attributes.some(attribute => attribute.name.toLowerCase() === 'src')) errors.push('blocked external script source.');
-
-  const type = (attributes.find(attribute => attribute.name.toLowerCase() === 'type')?.value ?? '').trim().toLowerCase();
-  if (!ALLOWED_SCRIPT_TYPES.has(type)) errors.push(`blocked unsupported script type: ${type || 'empty'}.`);
-
-  return errors;
-};
-
-const check_meta = (node: PolicyNodeType): string[] => {
-  const http_equiv = attrs(node).find(attribute => attribute.name.toLowerCase() === 'http-equiv');
-
-  return http_equiv?.value.trim().toLowerCase() === 'refresh' ? ['blocked meta refresh.'] : [];
+const check_meta_refresh = (node: PolicyNodeType): boolean => {
+  const http_equiv = attrs(node).find(a => a.name.toLowerCase() === 'http-equiv');
+  return http_equiv?.value.trim().toLowerCase() === 'refresh';
 };
 
 const empty_result = (errors: string[]): ValidationResultType => ({
   ok: false, errors, warnings: [], stats: { has_inline_script: false, external_image_hosts: [] },
 });
 
-const validate = (html: string, max_bytes = DEFAULT_MAX_BYTES): ValidationResultType => {
+const validate = (html: string, max_bytes: number): ValidationResultType => {
   if (typeof html !== 'string' || !html.trim()) return empty_result(['empty html document.']);
 
   const errors: string[] = [];
@@ -127,21 +65,14 @@ const validate = (html: string, max_bytes = DEFAULT_MAX_BYTES): ValidationResult
     const tag = node.tagName?.toLowerCase();
 
     if (tag) {
-      if (BLOCKED_TAGS.has(tag)) errors.push(`blocked <${tag}> tag.`);
-
-      if (tag === 'script') {
-        context.has_inline_script = true;
-        errors.push(...check_script(node));
-      }
-
-      errors.push(...check_attributes(node));
-      if (tag === 'meta') errors.push(...check_meta(node));
-      if (tag === 'style') errors.push(...check_style(node));
+      if (tag === 'script') context.has_inline_script = true;
 
       if (tag === 'title' && !context.title) {
         const text = collect_text(node).trim().slice(0, 140);
         if (text) context.title = text;
       }
+
+      if (tag === 'meta' && check_meta_refresh(node)) errors.push('blocked meta refresh.');
 
       if (tag === 'img') {
         const src = attrs(node).find(attribute => attribute.name.toLowerCase() === 'src');

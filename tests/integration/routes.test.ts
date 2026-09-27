@@ -41,16 +41,14 @@ describe('worker routes', () => {
     expect(missing_html.status).toBe(400);
     await expect(missing_html.json()).resolves.toEqual({ ok: false, code: 'BAD_REQUEST', error: 'missing html field.' });
 
-    const blocked = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<iframe src="https://evil.example"></iframe>' }) });
-    expect(blocked.status).toBe(422);
-    await expect(blocked.json()).resolves.toEqual({ ok: false, code: 'VALIDATION_FAILED', error: 'html validation failed.', errors: ['blocked <iframe> tag.'], warnings: ['no <title> found, a generic title will be used.'] });
+    const with_iframe = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<iframe src="https://evil.example"></iframe>' }) });
+    expect(with_iframe.status).toBe(201);
 
     const accepted = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<html><head><title>Scripted</title></head><body><script>document.title = "x";</script></body></html>' }) });
     expect(accepted.status).toBe(201);
 
     const inline_event = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<div onclick="alert(1)">Plan</div>' }) });
-    expect(inline_event.status).toBe(422);
-    await expect(inline_event.json()).resolves.toMatchObject({ ok: false, code: 'VALIDATION_FAILED', errors: ['blocked inline event handler: onclick.'] });
+    expect(inline_event.status).toBe(201);
   });
 
   it('deletes only an owned draft and hides it publicly', async () => {

@@ -28,9 +28,11 @@ const cspify = async (html: string): Promise<string> => {
   return [
     'default-src \'none\'',
     `script-src ${hashes.length ? hashes.join(' ') : '\'none\''}`,
-    'style-src \'unsafe-inline\'',
+    'style-src \'unsafe-inline\' https:',
     'img-src https: data:',
     'font-src https: data:',
+    'frame-src https:',
+    'media-src https:',
     'connect-src \'none\'',
     'base-uri \'none\'',
     'form-action \'none\'',

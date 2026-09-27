@@ -33,4 +33,4 @@ type ValidationResultType = {
   };
 };
 
-export type { PolicyAttributeType, PolicyNodeType, ValidationContextType, ValidationResultType, WalkerEntryType };
+export type { PolicyNodeType, ValidationContextType, ValidationResultType, WalkerEntryType };
