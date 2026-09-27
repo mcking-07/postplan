@@ -32,32 +32,6 @@ Apply these to any artifact that contains prose:
 - Color carries meaning (severity, status, category), not decoration. Never color alone: the word carries the status, the color reinforces it.
 - No cards-on-grey, no gradients, no emoji headers, no centered everything.
 
-## Document Rules
-
-Every artifact runs under a strict Content Security Policy. The server hashes each inline script at serve time and pins it in `script-src`. Only the exact scripts you uploaded execute.
-
-Enforced:
-
-- `connect-src 'none'`: no fetch, no XHR, no WebSocket, no sendBeacon. Scripts cannot reach the network.
-- `form-action 'none'`: scripts cannot submit forms.
-- `default-src 'none'`: nothing loads unless explicitly allowed.
-- `script-src` pinned by SHA-256 hash. No `unsafe-inline`, no `unsafe-eval`.
-- `style-src 'unsafe-inline'`: inline styles and `<style>` blocks work.
-- `img-src https: data:`: images from HTTPS URLs and data URIs.
-- `font-src https: data:`: web fonts from HTTPS URLs and data URIs.
-- `base-uri 'none'`: no `<base>` tag.
-
-Rejected (server returns 422):
-
-- External scripts (`<script src>`)
-- Inline event handlers (`onclick`, `onload`, etc.)
-- `javascript:`, `vbscript:`, `file:` URLs
-- iframes, embeds, objects, applets, `<base>`, `<link>`
-- Meta refresh redirects
-- `srcdoc` attributes, CSS `@import`, `expression()`, `behavior:`, `-moz-binding`
-
-Maximum file size: 2 MB. Maximum nesting depth: 512 levels. Bundled apps work if everything is inlined into one HTML file.
-
 ## Anti-Patterns
 
 Restart if the artifact has any three of these:
@@ -82,6 +56,63 @@ Apply these to every artifact:
 - Use semantic elements (`<nav>`, `<section>`, `<button>`) and ARIA attributes where they apply. Do not use divs and spans for interactive controls.
 - Content that may exceed the viewport width (tables, code blocks, side-by-side comparisons, wide grids) must be individually scrollable. Wrap each instance in a `<div>` with `overflow-x: auto`. Apply the overflow to the wrapper, not to `<body>` or the page container. A `<pre>` can take `overflow-x: auto` directly without a wrapper.
 
+## Document Rules
+
+Every artifact runs under a strict Content Security Policy. The server hashes each inline script at serve time and pins it in `script-src`. Only the exact scripts uploaded will execute.
+
+Enforced:
+
+- `default-src 'none'`: nothing loads unless explicitly allowed.
+- `script-src` pinned by SHA-256 hash. No `unsafe-inline`, no `unsafe-eval`.
+- `style-src 'unsafe-inline' https:`: inline styles, `<style>` blocks, and `@import` stylesheets.
+- `img-src https: data:`: images from HTTPS URLs and data URIs.
+- `font-src https: data:`: web fonts from HTTPS URLs and data URIs.
+- `frame-src https:`: iframes from HTTPS URLs.
+- `media-src https:`: audio and video from HTTPS URLs.
+- `connect-src 'none'`: no fetch, no XHR, no WebSocket, no sendBeacon.
+- `base-uri 'none'`: no `<base>` tag.
+- `form-action 'none'`: no form submissions.
+
+Rejected (server returns 422):
+
+- Empty documents
+- Documents exceeding 2 MB (512 KB via the CLI)
+- Nesting depth exceeding 512 levels
+- Meta refresh redirects (`<meta http-equiv="refresh">`)
+
+Maximum file size: 2 MB (512 KB via the CLI). Maximum nesting depth: 512 levels. Bundled apps work if everything is inlined into one HTML file.
+
+## CLI Constraints
+
+The CLI validates HTML before uploading. These rejections happen locally, before the request reaches the server.
+
+- Blocked tags: `form`, `iframe`, `object`, `embed`, `applet`, `base`, `link`.
+- Blocked attributes: inline event handlers (`on*`), `srcdoc`, `javascript:`/`vbscript:`/`file:` URLs, unsafe CSS expressions in `style`.
+- Blocked scripts: `<script src>` (external sources), `<script type="module">`, `<script type="importmap">`. Only inline classic scripts pass (`text/javascript` or no type attribute).
+- Size limit: 512 KB. The server accepts up to 2 MB, but the CLI rejects anything over 512 KB.
+- Use `@import url(...)` inside a `<style>` block instead of `<link rel="stylesheet">`.
+- Inline external script bodies into a `<script>` tag.
+- Rewrite module scripts as classic, replacing `import`/`export` with IIFE patterns or concatenation.
+
+## Direct Uploads
+
+The CLI blocks tags and patterns the server accepts. When the artifact needs something the CLI rejects and no workaround exists, upload via curl instead.
+
+- Iframes: the CLI blocks `<iframe>`, but the server stores it and the CSP allows `frame-src https:`.
+- Large artifacts over 512 KB. The server accepts up to 2 MB.
+- `<script type="module">` when rewriting to classic is impractical.
+
+```sh
+curl -X POST https://postplan.mcking.in/api/uploads \
+  -H "Authorization: Bearer <api-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"html": "...", "filename": "<name>.html", "description": "<description-or-summary>"}'
+```
+
+To update an existing draft, add `"draftId": "<id>"` to the JSON body. Response fields: `draftId`, `publicUrl`, `rawUrl`, `versionNumber`, `warnings`.
+
+Curl bypasses CLI validation, not the CSP. The server still enforces `connect-src 'none'`, `form-action 'none'`, and hash-pinned `script-src`.
+
 ## Upload
 
 Write the file inside the project directory. Use `plans/` if it exists, otherwise a gitignored scratchpad directory if one exists, otherwise create `.postplan/`. The CLI captures git metadata from the file's parent directory. Files outside a git repo lose git context.
@@ -97,21 +128,6 @@ The CLI prints a draft URL and a raw URL. Hand the raw URL to another agent when
 ## Viewer Behavior
 
 Every PostPlan URL serves the uploaded artifact to every client. There is no wrapper page, sandbox UI, or consent step. The `/raw` suffix is an alias that returns the same document.
-
-## Curl Fallback
-
-Without the CLI, use curl:
-
-```sh
-curl -X POST https://postplan.mcking.in/api/uploads \
-  -H "Authorization: Bearer <api-key>" \
-  -H "Content-Type: application/json" \
-  -d '{"html": "...", "filename": "<name>.html", "description": "<description-or-summary>"}'
-```
-
-To update an existing draft, add `"draftId": "<id>"` to the request body.
-
-Response fields: `draftId`, `publicUrl`, `rawUrl`, `versionNumber`, `warnings`.
 
 ## Draft URLs
 
