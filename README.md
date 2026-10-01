@@ -18,6 +18,8 @@ self-contained html gives those artifacts layout, diagrams, interactivity, and v
 
 the agent creates the document. postplan provides the agent skill and cloudflare workers infrastructure for publishing, storing, versioning, and sharing finished artifacts through a public url.
 
+[![postplan in 20 seconds](./assets/thumbnail.png)](https://github.com/user-attachments/assets/1b133f15-ce2e-4330-9329-74a37889bd4f)
+
 ## for agents
 
 read the complete setup instructions in [`public/llms.txt`](./public/llms.txt).
