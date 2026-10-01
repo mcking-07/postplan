@@ -44,6 +44,16 @@ const standalone = (title: string, description: string, styles: string, body: st
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="${colors.bg}">
   <meta name="description" content="${escape(description)}">
+  <meta property="og:title" content="${escape(title)}">
+  <meta property="og:description" content="${escape(description)}">
+  <meta property="og:url" content="https://postplan.mcking.in">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://postplan.mcking.in/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escape(title)}">
+  <meta name="twitter:description" content="${escape(description)}">
+  <meta name="twitter:image" content="https://postplan.mcking.in/og-image.png">
+  <link rel="canonical" href="https://postplan.mcking.in">
   <title>${escape(title)}</title>
   <link rel="icon" href="${favicon}" type="image/svg+xml">
   <style>${styles}</style>
