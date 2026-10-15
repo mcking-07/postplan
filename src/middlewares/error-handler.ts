@@ -8,11 +8,14 @@ const logger = loggerFor('middlewares/error-handler');
 const status_codes = new Map<ErrorCodeType, number>([
   ['BAD_REQUEST', 400],
   ['UNAUTHORIZED', 401],
+  ['FORBIDDEN', 403],
   ['NOT_FOUND', 404],
   ['CONFLICT', 409],
+  ['PAYLOAD_TOO_LARGE', 413],
   ['VALIDATION_FAILED', 422],
   ['RATE_LIMITED', 429],
   ['SERVICE_NOT_REGISTERED', 500],
+  ['SERVICE_UNAVAILABLE', 503],
 ]);
 
 const error_handler = (error: Error, context: { req: { path: string } }) => {
@@ -26,7 +29,7 @@ const error_handler = (error: Error, context: { req: { path: string } }) => {
 
     if (!is_api) return responsify({ status, html: render_error(status, message) });
 
-    const body = { ok: false, code, error: message, errors: payload?.errors, warnings: payload?.warnings };
+    const body = { ok: false, code, error: message, errors: payload?.errors, warnings: payload?.warnings, issues: payload?.issues };
     return responsify({ status, body });
   }
 

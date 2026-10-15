@@ -11,9 +11,9 @@ describe('error handler', () => {
   });
 
   it('returns validation errors and warnings', async () => {
-    const response = error_handler(new ValidationFailed('html validation failed.', { errors: ['blocked tag.'], warnings: [] }), { req: { path: '/api/uploads' } });
+    const response = error_handler(new ValidationFailed('html validation failed.', { errors: ['blocked tag.'], warnings: [], issues: [{ level: 'error', code: 'blocked-tag', message: 'blocked tag.', count: 1 }] }), { req: { path: '/api/uploads' } });
 
-    await expect(response.json()).resolves.toEqual({ ok: false, code: 'VALIDATION_FAILED', error: 'html validation failed.', errors: ['blocked tag.'], warnings: [] });
+    await expect(response.json()).resolves.toEqual({ ok: false, code: 'VALIDATION_FAILED', error: 'html validation failed.', errors: ['blocked tag.'], warnings: [], issues: [{ level: 'error', code: 'blocked-tag', message: 'blocked tag.', count: 1 }] });
   });
 
   it('does not expose details for internal payloads', async () => {

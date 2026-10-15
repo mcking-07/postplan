@@ -1,8 +1,11 @@
 export { BadRequest } from './bad-request';
 export { BaseError } from './base-error';
 export { Conflict } from './conflict';
+export { Forbidden } from './forbidden';
 export { NotFound } from './not-found';
+export { PayloadTooLarge } from './payload-too-large';
 export { RateLimited } from './rate-limited';
 export { ServiceNotRegistered } from './service-not-registered';
+export { ServiceUnavailable } from './service-unavailable';
 export { Unauthorized } from './unauthorized';
 export { ValidationFailed } from './validation-failed';
