@@ -13,6 +13,8 @@ const colors = {
   green: '#5b5',
   green_bg: '#0a2a0a',
   green_text: '#8d8',
+  green_border: '#114411',
+  green_hover: '#336633',
   red: '#c66',
   red_bg: '#2a1010',
   red_border: '#441111',

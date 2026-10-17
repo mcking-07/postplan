@@ -1,7 +1,9 @@
-import type { AccountType, AdminParamsType, AuditEntryType, DraftType } from '../types';
+import type { AccountFlagType, AccountType, AdminParamsType, AuditEntryType, DraftType } from '../types';
 import { dim, heading, pagination, tag } from './fragments';
-import { escape, format_date } from './helpers';
+import { escape, format_date, format_label } from './helpers';
 import { shell } from './layout';
+
+const close_handler = (selector: string) => `document.querySelectorAll('${selector}').forEach(form => { form.reset(); form.style.display = 'none'; form.previousElementSibling.style.visibility = '' })`;
 
 const promote_cell = (account: AccountType, current_email: string) => {
   if (account.email === current_email) return dim('you');
@@ -15,14 +17,25 @@ const promote_cell = (account: AccountType, current_email: string) => {
   </form>`;
 };
 
+const flags_cell = (account: AccountType, flags: AccountFlagType[]) => {
+  const toggles = flags.map(flag => `<label class="flag"><input type="checkbox" name="flags" value="${flag}"${account.flags.includes(flag) ? ' checked' : ''}><span>${format_label(flag)}</span></label>`).join('');
+
+  return `<button onclick="${close_handler('.flags-pop')};this.nextElementSibling.style.display='flex';this.style.visibility='hidden'">flags</button>
+  <form method="post" action="/admin/accounts/${account.id}/flags" class="flags-pop" autocomplete="off" style="display:none">
+    ${toggles}
+    <button type="submit" class="success">save</button>
+    <button type="button" onclick="${close_handler('.flags-pop')}">cancel</button>
+  </form>`;
+};
+
 const disable_cell = (draft: DraftType) => {
   if (draft.deleted_at || draft.disabled_at) return '<button class="danger" disabled>disable</button>';
 
-  return `<button class="danger" onclick="this.nextElementSibling.style.display='flex';this.style.display='none';this.nextElementSibling.querySelector('input').focus()">disable</button>
+  return `<button class="danger" onclick="${close_handler('.disable-pop')};this.nextElementSibling.style.display='flex';this.style.visibility='hidden';this.nextElementSibling.querySelector('input').focus()">disable</button>
   <form method="post" action="/admin/d/${draft.id}/disable" class="disable-pop" style="display:none">
     <input type="text" name="reason" placeholder="reason (optional)">
     <button type="submit" class="danger">confirm</button>
-    <button type="button" onclick="this.parentElement.style.display='none';this.parentElement.previousElementSibling.style.display=''">cancel</button>
+    <button type="button" onclick="${close_handler('.disable-pop')}">cancel</button>
   </form>`;
 };
 
@@ -31,11 +44,12 @@ const resource_cell = (log: AuditEntryType) => {
   return `${escape(log.resource_type)}:${escape(log.resource_id ?? '')}`;
 };
 
-const account_item = (account: AccountType, current_email: string) => `<tr>
+const account_item = (account: AccountType, flags: AccountFlagType[], current_email: string) => `<tr>
   <td data-tip="${escape(account.email)}"><span class="tip">${escape(account.email)}</span></td>
   <td class="dim">${escape(account.id)}</td>
   <td>${tag(account.role)}</td>
   <td>${format_date(account.created_at)}</td>
+  <td>${flags_cell(account, flags)}</td>
   <td>${promote_cell(account, current_email)}</td>
 </tr>`;
 
@@ -44,7 +58,7 @@ const draft_item = (draft: DraftType, base: string) => `<tr>
   <td class="dim">${escape(draft.account_id)}</td>
   <td>${format_date(draft.updated_at)}</td>
   <td>${draft.deleted_at ? tag('deleted') : draft.disabled_at ? tag('disabled') : tag('active')}</td>
-  <td style="position:relative">${disable_cell(draft)}</td>
+  <td>${disable_cell(draft)}</td>
 </tr>`;
 
 const audit_item = (log: AuditEntryType) => `<tr>
@@ -55,15 +69,15 @@ const audit_item = (log: AuditEntryType) => `<tr>
   <td class="log-meta"${log.metadata !== '{}' ? ` data-tip="${escape(log.metadata)}"` : ''}><span class="tip">${escape(log.metadata !== '{}' ? log.metadata : '')}</span></td>
 </tr>`;
 
-const render_admin = ({ email, role, accounts, drafts, logs, base, team }: AdminParamsType) => {
+const render_admin = ({ email, role, accounts, flags, drafts, logs, base, team }: AdminParamsType) => {
   const title = 'postplan admin';
   const description = 'system administration.';
 
   const page_params = { accounts_page: accounts.page, drafts_page: drafts.page, audit_page: logs.page };
 
   const accounts_table = `<table class="accounts">
-    <thead><tr><th>Email</th><th>ID</th><th>Role</th><th>Created</th><th></th></tr></thead>
-    <tbody>${accounts.rows.map(account => account_item(account, email)).join('')}</tbody>
+    <thead><tr><th>Email</th><th>ID</th><th>Role</th><th>Created</th><th></th><th></th></tr></thead>
+    <tbody>${accounts.rows.map(account => account_item(account, flags, email)).join('')}</tbody>
   </table>`;
 
   const drafts_table = `<table class="drafts">

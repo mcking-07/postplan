@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { cspify, loggerFor, responsify, sanitize, schedule } from '../common';
+import { loggerFor, responsify, sanitize, schedule } from '../common';
 import { config } from '../config';
 import { services } from '../services';
 import type { AccessVariablesType } from '../types';
@@ -33,7 +33,7 @@ class AdminController {
     logger.info('serving admin dashboard');
     return responsify({
       status: 200,
-      html: render_admin({ email, role, accounts, drafts, logs, base: config.base, team: config.team }),
+      html: render_admin({ email, role, accounts, flags: Object.values(config.flags), drafts, logs, base: config.base, team: config.team }),
     });
   };
 
@@ -44,10 +44,16 @@ class AdminController {
     const drafts_service = this.get_drafts_service();
     logger.info(`admin previewing draft [${draft_id}]`);
 
-    const { draft, version, html } = await drafts_service.resolve(draft_id, { unfiltered: true });
-    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
+    const root = `/admin/d/${draft_id}`;
+    const path = context.req.path.slice(root.length);
 
-    return responsify({ status: 200, html, headers }, { csp: await cspify(html), coop: true });
+    const { draft, version, page, redirect } = await drafts_service.resolve(draft_id, path, { unfiltered: true });
+    if (redirect) return context.redirect(`${root}${redirect}${new URL(context.req.url).search}`);
+
+    const html = await drafts_service.read(page.object_key);
+    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-draft-version': String(version.version_number) };
+
+    return responsify({ status: 200, html, headers }, { csp: true, coop: true });
   };
 
   version = async (context: Context<AccessVariablesType>) => {
@@ -60,10 +66,16 @@ class AdminController {
     const drafts_service = this.get_drafts_service();
     logger.info(`admin previewing draft [${draft_id}] version [${number}]`);
 
-    const { draft, version, html } = await drafts_service.resolve(draft_id, { version: number, unfiltered: true });
-    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
+    const root = `/admin/d/${draft_id}/version/${context.req.param('number')}`;
+    const path = context.req.path.slice(root.length);
 
-    return responsify({ status: 200, html, headers }, { csp: await cspify(html), coop: true });
+    const { draft, version, page, redirect } = await drafts_service.resolve(draft_id, path, { version: number, unfiltered: true });
+    if (redirect) return context.redirect(`${root}${redirect}${new URL(context.req.url).search}`);
+
+    const html = await drafts_service.read(page.object_key);
+    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-draft-version': String(version.version_number) };
+
+    return responsify({ status: 200, html, headers }, { csp: true, coop: true });
   };
 
   promote = async (context: Context<AccessVariablesType>) => {
@@ -79,13 +91,38 @@ class AdminController {
     const accounts_service = this.get_accounts_service();
     const audit_service = this.get_audit_service();
 
-    logger.info(`promoting account [${target}] to [${new_role}]`);
+    logger.info(`admin [${admin.id}] promoting account [${target}] to [${new_role}]`);
     await accounts_service.promote(target, new_role as 'admin' | 'member');
 
     schedule(context, audit_service.record({
-      account_id: admin.id, action: 'account.role_change', resource_type: 'account', resource_id: target, metadata: { role: new_role },
+      account_id: admin.id, action: 'account.update', resource_type: 'account', resource_id: target, metadata: { role: new_role },
       source_ip: context.req.header('x-real-ip') ?? context.req.header('cf-connecting-ip'), user_agent: context.req.header('user-agent'),
     }), 'account role audit');
+
+    return context.redirect('/admin');
+  };
+
+  flags = async (context: Context<AccessVariablesType>) => {
+    const admin = context.get('account');
+
+    const target = context.req.param('id');
+    if (!target) return context.redirect('/admin');
+
+    const body = await context.req.parseBody({ all: true });
+    const requested = [body.flags ?? []].flat();
+
+    const flags = Object.values(config.flags).filter(flag => requested.includes(flag));
+
+    const accounts_service = this.get_accounts_service();
+    const audit_service = this.get_audit_service();
+
+    logger.info(`admin [${admin.id}] setting flags [${flags.join(', ')}] for account [${target}]`);
+    await accounts_service.update_flags(target, flags);
+
+    schedule(context, audit_service.record({
+      account_id: admin.id, action: 'account.update', resource_type: 'account', resource_id: target, metadata: { flags },
+      source_ip: context.req.header('x-real-ip') ?? context.req.header('cf-connecting-ip'), user_agent: context.req.header('user-agent'),
+    }), 'account flags audit');
 
     return context.redirect('/admin');
   };

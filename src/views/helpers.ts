@@ -9,6 +9,8 @@ const format_bytes = (bytes: number) => {
 
 const format_date = (iso: string) => iso.slice(0, 16).replace('T', ' ');
 
+const format_label = (value: string) => value.split('-').map(word => `${word.charAt(0).toUpperCase()}${word.slice(1)}`).join(' ');
+
 const plural = (count: number, word: string) => count === 1 ? `${count} ${word}` : `${count} ${word}s`;
 
 const relative = (iso: string) => {
@@ -31,4 +33,4 @@ const relative = (iso: string) => {
   return 'now';
 };
 
-export { escape, format_bytes, format_date, plural, relative };
+export { escape, format_bytes, format_date, format_label, plural, relative };

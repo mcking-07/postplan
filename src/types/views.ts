@@ -1,4 +1,4 @@
-import type { AccountType } from './account';
+import type { AccountFlagType, AccountType } from './account';
 import type { AccountRoleType, PageType } from './shared';
 import type { ApiKeySummaryType } from './api-key';
 import type { AuditEntryType } from './audit';
@@ -41,6 +41,7 @@ type AdminParamsType = {
   email: string;
   role: AccountRoleType;
   accounts: PageType<AccountType>;
+  flags: AccountFlagType[];
   drafts: PageType<DraftType>;
   logs: PageType<AuditEntryType>;
   base: string;

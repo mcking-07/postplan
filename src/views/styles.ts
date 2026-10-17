@@ -186,6 +186,8 @@ const tables = `
   }
 
   td + td, th + th { padding-left: 1rem; }
+  td button { padding: 2px 8px; }
+  td input[type="text"] { font-size: ${fonts.xs}; padding: 2px 8px; }
   td a { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: ${colors.ghost}; }
   td a:hover { text-decoration-color: ${colors.muted}; }
 
@@ -235,6 +237,7 @@ const tables = `
   table.drafts th:nth-child(3) { width: 20%; }
   table.drafts th:nth-child(4) { width: 15%; }
   table.drafts th:nth-child(5) { width: 15%; }
+  table.drafts tr { position: relative; }
   table.drafts td:nth-child(1) { position: relative; }
   table.drafts td:nth-child(1) .tip {
     display: block;
@@ -267,10 +270,12 @@ const tables = `
 
   table.accounts { table-layout: fixed; }
   table.accounts th:nth-child(1) { width: 30%; }
-  table.accounts th:nth-child(2) { width: 20%; }
-  table.accounts th:nth-child(3) { width: 15%; }
+  table.accounts th:nth-child(2) { width: 18%; }
+  table.accounts th:nth-child(3) { width: 12%; }
   table.accounts th:nth-child(4) { width: 20%; }
-  table.accounts th:nth-child(5) { width: 15%; }
+  table.accounts th:nth-child(5) { width: 10%; }
+  table.accounts th:nth-child(6) { width: 10%; }
+  table.accounts tr { position: relative; }
   table.accounts td:nth-child(1) { position: relative; }
 
   table.accounts td:nth-child(1) .tip {
@@ -301,11 +306,11 @@ const tables = `
   table.accounts td:nth-child(1)[data-tip]:hover::after { display: block; }
 
   table.audit { table-layout: fixed; }
-  table.audit th:nth-child(1) { width: 12%; }
-  table.audit th:nth-child(2) { width: 15%; }
+  table.audit th:nth-child(1) { width: 14%; }
+  table.audit th:nth-child(2) { width: 16%; }
   table.audit th:nth-child(3) { width: 20%; }
   table.audit th:nth-child(4) { width: 18%; }
-  table.audit th:nth-child(5) { width: 35%; }
+  table.audit th:nth-child(5) { width: 32%; }
 
   table.keys { table-layout: fixed; }
   table.keys th:nth-child(1) { width: 35%; }
@@ -398,6 +403,18 @@ const buttons = `
     background: ${colors.red_bg};
     border-color: ${colors.red_hover};
     color: ${colors.red_bright};
+  }
+
+  button.success {
+    border-color: ${colors.green_border};
+    color: ${colors.green};
+    background: transparent;
+  }
+
+  button.success:hover {
+    background: ${colors.green_bg};
+    border-color: ${colors.green_hover};
+    color: ${colors.green_text};
   }
 
   button:disabled {
@@ -563,7 +580,7 @@ const components = `
     margin-bottom: 1rem;
   }
 
-  .disable-pop {
+  .disable-pop, .flags-pop {
     position: absolute;
     right: 0;
     top: 0;
@@ -578,6 +595,38 @@ const components = `
   }
 
   .disable-pop input { width: 220px; }
+
+  .flags-pop { left: 30%; }
+  .flags-pop button[type="submit"] { margin-left: auto; }
+
+  .flag input { display: none; }
+
+  .flag span {
+    display: inline-block;
+    font-size: ${fonts.xs};
+    line-height: normal;
+    padding: 2px 8px;
+    border: 1px solid ${colors.ghost};
+    background: ${colors.surface};
+    color: ${colors.muted};
+    cursor: pointer;
+  }
+
+  .flag input:checked + span {
+    border-color: ${colors.green_border};
+    background: ${colors.green_bg};
+    color: ${colors.green};
+  }
+
+  .flag span:hover {
+    border-color: ${colors.dim};
+    color: ${colors.text};
+  }
+
+  .flag input:checked + span:hover {
+    border-color: ${colors.green_hover};
+    color: ${colors.green_text};
+  }
 
   .log-meta {
     position: relative;
@@ -656,7 +705,7 @@ const responsive = `
     table.versions th:nth-child(4),
     table.versions td:nth-child(4) { display: none; }
 
-    .disable-pop {
+    .disable-pop, .flags-pop {
       position: fixed;
       left: 0;
       right: 0;
