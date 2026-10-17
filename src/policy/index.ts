@@ -1,1 +1,1 @@
-export { validate } from './html';
+export { validate } from './validation';
