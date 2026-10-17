@@ -1,6 +1,6 @@
 import type { NullableType, UnknownPayloadType } from './shared';
 
-type AuditActionType = 'auth.login' | 'account.create' | 'account.role_change' | 'key.create' | 'key.revoke' | 'draft.create' | 'draft.update' | 'draft.delete' | 'draft.disable';
+type AuditActionType = 'auth.login' | 'account.create' | 'account.update' | 'key.create' | 'key.revoke' | 'draft.create' | 'draft.update' | 'draft.unchanged' | 'draft.delete' | 'draft.disable';
 
 type AuditEntityType = {
   id: string;

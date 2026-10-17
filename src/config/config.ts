@@ -29,7 +29,16 @@ const bootstrap = (env: EnvironmentType) => {
     environment,
     admins: required(env.ADMIN_EMAILS, 'ADMIN_EMAILS').split(',').map(email => email.trim().toLowerCase()).filter(Boolean),
     base: required(env.PUBLIC_BASE_URL, 'PUBLIC_BASE_URL'),
-    bytes: { maximum: 2 * 1024 * 1024 },
+    bytes: { maximum: 4 * 1024 * 1024 },
+    pages: { maximum: 50 },
+    flags: { custom_urls: 'custom-urls' },
+    capabilities: {
+      inline_scripts: true,
+      external_assets: 'https images, video, audio, fonts, and stylesheets',
+      blocked_in_sandbox: [
+        'script src (external scripts)', 'fetch, XHR, WebSocket, and EventSource', 'localStorage, sessionStorage, indexedDB, and cookies', 'alert, confirm, and prompt', 'workers', 'forms', 'iframes, embeds, and objects', 'meta refresh',
+      ],
+    },
     team: 'team' in cf ? cf.team : undefined,
     cloudflare: cf,
   });

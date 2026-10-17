@@ -1,4 +1,4 @@
-import type { AccountContextType } from './account';
+import type { AccountContextType, BearerAccountContextType } from './account';
 import type { ApiKeyContextType } from './api-key';
 
 type EnvironmentType = {
@@ -24,7 +24,7 @@ type AccessVariablesType = {
 
 type BearerVariablesType = {
   Variables: {
-    account: AccountContextType;
+    account: BearerAccountContextType;
     key: ApiKeyContextType;
   };
 };

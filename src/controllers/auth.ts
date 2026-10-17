@@ -15,7 +15,7 @@ class AuthController {
     const key = context.get('key');
 
     return responsify({
-      status: 200, body: outbound({ account_id: account.id, email: account.email, api_key_id: key.id, api_key_name: key.name })
+      status: 200, body: outbound({ account_id: account.id, account_name: account.email, email: account.email, api_key_id: key.id, api_key_name: key.name, flags: account.flags })
     });
   };
 

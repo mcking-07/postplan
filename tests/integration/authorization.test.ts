@@ -28,7 +28,7 @@ describe('worker authorization', () => {
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
     const me = await exports.default.fetch('http://localhost/api/me', { headers });
     expect(me.status).toBe(200);
-    await expect(me.json()).resolves.toMatchObject({ email: 'keys-flow@example.com', apiKeyName: 'integration' });
+    await expect(me.json()).resolves.toMatchObject({ accountName: 'keys-flow@example.com', email: 'keys-flow@example.com', apiKeyName: 'integration', flags: [] });
     const created_response = await exports.default.fetch('http://localhost/api/api-keys', { method: 'POST', headers, body: JSON.stringify({ name: 'new key!' }) });
     expect(created_response.status).toBe(201);
     const created = await created_response.json() as { apiKey: { id: string; name: string }; token: string };
@@ -43,6 +43,15 @@ describe('worker authorization', () => {
     expect(revoke.status).toBe(200);
     const revoked = await exports.default.fetch('http://localhost/api/me', { headers: { Authorization: `Bearer ${created.token}` } });
     expect(revoked.status).toBe(401);
+  });
+
+  it('returns the account flags', async () => {
+    const { account_id, token } = await create_account_key('flags@example.com');
+    const { accounts } = create_repositories();
+    await accounts.update(account_id, { flags: '["custom-urls"]' });
+
+    const me = await exports.default.fetch('http://localhost/api/me', { headers: { Authorization: `Bearer ${token}` } });
+    await expect(me.json()).resolves.toMatchObject({ flags: ['custom-urls'] });
   });
 
   it('enforces account ownership for key revocation', async () => {

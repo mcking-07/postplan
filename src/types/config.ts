@@ -16,6 +16,9 @@ type ConfigType = {
   admins: string[];
   base: string;
   bytes: { maximum: number };
+  pages: { maximum: number };
+  flags: { custom_urls: 'custom-urls' };
+  capabilities: { inline_scripts: boolean; external_assets: string; blocked_in_sandbox: string[] };
   team?: string;
   cloudflare: CloudflareAccessType | CloudflareDevelopmentType;
 };

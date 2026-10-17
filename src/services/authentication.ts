@@ -3,7 +3,7 @@ import { hash, loggerFor } from '../common';
 import { config } from '../config';
 import { Unauthorized } from '../errors';
 import type { AccountsRepository, KeysRepository } from '../database';
-import type { AccessClaimsType, AccountType } from '../types';
+import type { AccessClaimsType, AccountEntityType } from '../types';
 
 const logger = loggerFor('services/authentication');
 
@@ -29,7 +29,7 @@ class AuthenticationService {
     logger.info(`bearer authenticated account [${account.id}] with key [${key.id}]`);
 
     return {
-      account: { id: account.id, email: account.email, role: account.role },
+      account: { id: account.id, email: account.email, role: account.role, flags: JSON.parse(account.flags) },
       key: { id: key.id, name: key.name, account_id: key.account_id },
     };
   };
@@ -57,7 +57,7 @@ class AuthenticationService {
     return this.find_or_create(claims.email);
   };
 
-  private find_or_create = async (email: string): Promise<AccountType> => {
+  private find_or_create = async (email: string): Promise<AccountEntityType> => {
     const normalized = email.toLowerCase().trim();
 
     const [find_error, existing] = await this.accounts.find_by_email(normalized);
@@ -77,7 +77,7 @@ class AuthenticationService {
     return created;
   };
 
-  private reconcile = async (account: AccountType, email: string): Promise<AccountType> => {
+  private reconcile = async (account: AccountEntityType, email: string): Promise<AccountEntityType> => {
     const { admins } = config;
 
     if (admins.includes(email) && account.role !== 'admin') {
