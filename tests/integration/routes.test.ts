@@ -38,17 +38,39 @@ describe('worker routes', () => {
     await expect(malformed.json()).resolves.toEqual({ ok: false, code: 'BAD_REQUEST', error: 'invalid request body.' });
 
     const missing_html = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ filename: 'plan.html' }) });
-    expect(missing_html.status).toBe(400);
-    await expect(missing_html.json()).resolves.toEqual({ ok: false, code: 'BAD_REQUEST', error: 'missing html field.' });
+    expect(missing_html.status).toBe(422);
+    await expect(missing_html.json()).resolves.toMatchObject({ ok: false, code: 'VALIDATION_FAILED', issues: [{ code: 'empty' }] });
+
+    const empty_files = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ files: [] }) });
+    expect(empty_files.status).toBe(422);
+    await expect(empty_files.json()).resolves.toMatchObject({ ok: false, code: 'VALIDATION_FAILED', errors: ['html document is empty.'] });
+
+    const invalid_files = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ files: 'index.html' }) });
+    expect(invalid_files.status).toBe(422);
+    await expect(invalid_files.json()).resolves.toMatchObject({ ok: false, code: 'VALIDATION_FAILED', errors: ['html document is empty.'] });
+
+    const all_problems = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<title>Plan</title><form></form>', slug: 'admin', description: 'x'.repeat(1001) }) });
+    expect(all_problems.status).toBe(422);
+    await expect(all_problems.json()).resolves.toMatchObject({
+      errors: [expect.stringContaining('blocked <form> tag'), '"admin" is reserved.', 'description is 1001 characters, the limit is 1000.'],
+    });
 
     const with_iframe = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<iframe src="https://evil.example"></iframe>' }) });
-    expect(with_iframe.status).toBe(201);
+    expect(with_iframe.status).toBe(422);
+    await expect(with_iframe.json()).resolves.toMatchObject({ issues: [{ code: 'blocked-tag' }, { code: 'no-title' }] });
 
     const accepted = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<html><head><title>Scripted</title></head><body><script>document.title = "x";</script></body></html>' }) });
     expect(accepted.status).toBe(201);
 
     const inline_event = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: '<div onclick="alert(1)">Plan</div>' }) });
     expect(inline_event.status).toBe(201);
+
+    const oversized = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers, body: JSON.stringify({ html: 'x'.repeat(10 * 1024 * 1024) }) });
+    expect(oversized.status).toBe(413);
+    await expect(oversized.json()).resolves.toMatchObject({ ok: false, code: 'PAYLOAD_TOO_LARGE', error: 'upload is too large.' });
+
+    const oversized_check = await exports.default.fetch('http://localhost/api/check', { method: 'POST', headers, body: JSON.stringify({ html: 'x'.repeat(10 * 1024 * 1024) }) });
+    expect(oversized_check.status).toBe(413);
   });
 
   it('deletes only an owned draft and hides it publicly', async () => {

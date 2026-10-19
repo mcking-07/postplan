@@ -1,4 +1,5 @@
 import type { RequestIdVariables } from 'hono/request-id';
+import type { AccountFlagType } from './account';
 
 type AsyncContextStoreType = {
   Variables: RequestIdVariables;
@@ -6,7 +7,7 @@ type AsyncContextStoreType = {
 
 type ResponseOptionsType = {
   cache?: boolean;
-  csp?: string;
+  csp?: boolean;
   coop?: boolean;
 };
 
@@ -33,10 +34,17 @@ type UploadMetadataType = {
   file_sha256?: string;
 };
 
+type UploadPageType = {
+  path?: string;
+  html?: string;
+};
+
 type UploadRequestType = {
-  html: string;
+  html?: string;
+  files?: UploadPageType[];
   filename?: string;
   draft_id?: string;
+  slug?: string;
   description?: string;
   metadata?: UploadMetadataType;
 };
@@ -44,10 +52,17 @@ type UploadRequestType = {
 type UploadContextType = {
   request: UploadRequestType;
   account_id: string;
+  flags: AccountFlagType[];
   api_key_id: string;
   source_ip?: string;
   user_agent?: string;
   request_id: string;
 };
 
-export type { AsyncContextStoreType, HandlerResponseType, KeyTransformerType, ResponseOptionsType, UploadContextType, UploadMetadataType, UploadRequestType };
+type SlugAvailabilityType = {
+  slug: string;
+  status: 'available' | 'yours' | 'taken' | 'unavailable';
+  message?: string;
+};
+
+export type { AsyncContextStoreType, HandlerResponseType, KeyTransformerType, ResponseOptionsType, SlugAvailabilityType, UploadContextType, UploadMetadataType, UploadPageType, UploadRequestType };

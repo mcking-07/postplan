@@ -1,9 +1,11 @@
+import type { DraftPageEntityType } from './draft-page';
 import type { DraftVersionType } from './draft-version';
 import type { NullableType } from './shared';
 
 type DraftEntityType = {
   id: string;
   account_id: string;
+  slug: NullableType<string>;
   title: string;
   description: NullableType<string>;
   current_version_id: NullableType<string>;
@@ -20,6 +22,7 @@ type DraftEntityType = {
 type DraftType = {
   id: string;
   account_id: string;
+  slug?: string;
   title: string;
   description?: string;
   current_version_id?: string;
@@ -35,6 +38,7 @@ type DraftType = {
 
 type DraftSummaryRowType = {
   id: string;
+  slug: NullableType<string>;
   title: string;
   description: NullableType<string>;
   repo_org: NullableType<string>;
@@ -45,11 +49,13 @@ type DraftSummaryRowType = {
   disabled_at: NullableType<string>;
   latest_version_number: NullableType<number>;
   latest_version_at: NullableType<string>;
+  page_count: number;
   version_count: number;
 };
 
 type DraftSummaryType = {
   id: string;
+  slug: NullableType<string>;
   title: string;
   description?: string;
   repo_org?: string;
@@ -73,17 +79,20 @@ type DraftGroupType = {
 type ResolvedDraftType = {
   draft: DraftType;
   version: DraftVersionType;
-  html: string;
+  page: DraftPageEntityType;
+  redirect?: string;
 };
 
 type SetVersionParamsType = {
   id: string;
   version_id: string;
+  slug?: string;
   title: string;
   description?: string;
   repo_org?: string;
   repo_name?: string;
   repo_host?: string;
+  touch: boolean;
 };
 
 type ResolveOptionsType = {

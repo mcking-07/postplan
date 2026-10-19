@@ -1,6 +1,5 @@
 import type { Hono } from 'hono';
-import { bodyLimit } from 'hono/body-limit';
-import { require_access, require_admin, require_bearer } from '../middlewares';
+import { limit_upload, require_access, require_admin, require_bearer } from '../middlewares';
 import type { ApplicationEnvironmentType } from '../types';
 import { AdminController, AuthController, DashboardController, DraftController, HealthController, KeyController, PageController, UploadController, VersionController } from '../controllers';
 
@@ -25,11 +24,6 @@ const configure = (router: Hono<ApplicationEnvironmentType>) => {
   router.get('/healthz', controllers.health.check);
   router.get('/healthcheck', controllers.health.check);
 
-  router.get('/d/:id/version/:number/raw', controllers.pages.version);
-  router.get('/d/:id/version/:number', controllers.pages.version);
-  router.get('/d/:id/raw', controllers.pages.serve);
-  router.get('/d/:id', controllers.pages.serve);
-
   // cloudflare access
   router.get('/dashboard', require_access(), controllers.dashboard.serve);
   router.get('/cli/auth', require_access(), controllers.auth.serve);
@@ -37,11 +31,22 @@ const configure = (router: Hono<ApplicationEnvironmentType>) => {
   router.post('/cli/auth/revoke/:id', require_access(), controllers.auth.revoke);
   router.get('/d/:id/versions', require_access(), controllers.versions.list);
 
+  // draft pages
+  router.get('/d/:id/version/:number/raw', controllers.pages.version);
+  router.get('/d/:id/version/:number', controllers.pages.version);
+  router.get('/d/:id/version/:number/*', controllers.pages.version);
+  router.get('/d/:id/raw', controllers.pages.serve);
+  router.get('/d/:id', controllers.pages.serve);
+  router.get('/d/:id/*', controllers.pages.serve);
+
   // admin
   router.get('/admin', require_access(), require_admin(), controllers.admin.serve);
   router.get('/admin/d/:id/version/:number', require_access(), require_admin(), controllers.admin.version);
+  router.get('/admin/d/:id/version/:number/*', require_access(), require_admin(), controllers.admin.version);
   router.get('/admin/d/:id', require_access(), require_admin(), controllers.admin.preview);
+  router.get('/admin/d/:id/*', require_access(), require_admin(), controllers.admin.preview);
   router.post('/admin/accounts/:id/promote', require_access(), require_admin(), controllers.admin.promote);
+  router.post('/admin/accounts/:id/flags', require_access(), require_admin(), controllers.admin.flags);
   router.post('/admin/d/:id/disable', require_access(), require_admin(), controllers.admin.disable);
 
   // bearer api
@@ -51,7 +56,8 @@ const configure = (router: Hono<ApplicationEnvironmentType>) => {
   router.get('/api/api-keys', require_bearer(), controllers.keys.list);
   router.post('/api/api-keys', require_bearer(), controllers.keys.create);
   router.post('/api/api-keys/:id/revoke', require_bearer(), controllers.keys.revoke);
-  router.post('/api/uploads', require_bearer(), bodyLimit({ maxSize: 2 * 1024 * 1024 }), controllers.uploads.create);
+  router.post('/api/uploads', require_bearer(), limit_upload(), controllers.uploads.create);
+  router.post('/api/check', require_bearer(), limit_upload(), controllers.uploads.check);
 };
 
 export { configure };
