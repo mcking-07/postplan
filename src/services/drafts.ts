@@ -1,14 +1,32 @@
 import { loggerFor } from '../common';
 import { config } from '../config';
 import { NotFound } from '../errors';
-import type { DraftsRepository, VersionsRepository } from '../database';
+import type { DraftsRepository, PagesRepository, VersionsRepository } from '../database';
 import type { Storage } from '../storage';
 import type { DraftEntityType, DraftType, DraftVersionEntityType, DraftVersionType, ResolveOptionsType, ResolvedDraftType } from '../types';
 
 const logger = loggerFor('services/drafts');
 
+const INDEX_PATHS = new Set(['', '/', '/raw', '/raw/']);
+
+const page_candidates = (path: string) => {
+  if (path.endsWith('/')) return [`${path}index.html`];
+  if (path.endsWith('.html')) return [path];
+
+  return [`${path}.html`, `${path}/index.html`];
+};
+
+const redirect_path = (path: string, target: string, page: string, multiple: boolean) => {
+  if (multiple && path === '') return '/';
+  if (multiple && path === '/raw/') return '/raw';
+  if (page === `${target}/index.html`) return `${path}/`;
+
+  return undefined;
+};
+
 const normalize_draft = (draft: DraftEntityType): DraftType => ({
   ...draft,
+  slug: draft.slug ?? undefined,
   description: draft.description ?? undefined,
   current_version_id: draft.current_version_id ?? undefined,
   repo_org: draft.repo_org ?? undefined,
@@ -37,24 +55,41 @@ const normalize_version = (version: DraftVersionEntityType): DraftVersionType =>
 class DraftsService {
   private readonly drafts: DraftsRepository;
   private readonly versions: VersionsRepository;
+  private readonly pages: PagesRepository;
   private readonly storage: Storage;
-  constructor(drafts: DraftsRepository, versions: VersionsRepository, storage: Storage) {
+  constructor(drafts: DraftsRepository, versions: VersionsRepository, pages: PagesRepository, storage: Storage) {
     this.drafts = drafts;
     this.versions = versions;
+    this.pages = pages;
     this.storage = storage;
   }
 
-  resolve = async (id: string, options: ResolveOptionsType = {}): Promise<ResolvedDraftType> => {
-    const [draft_error, draft] = options.unfiltered ? await this.drafts.find_by_id(id) : await this.drafts.find_public(id);
+  resolve = async (reference: string, path: string, options: ResolveOptionsType = {}): Promise<ResolvedDraftType> => {
+    const [draft_error, draft] = options.unfiltered ? await this.drafts.find_by_id(reference) : await this.drafts.find_public(reference);
     if (draft_error || !draft) throw new NotFound('draft not found.');
 
     const version = await this.find_version_entity(draft, options.version);
 
-    const [storage_error, html] = await this.storage.get(version.object_key);
-    if (storage_error || !html) throw new NotFound('version content not found.');
+    const [pages_error, pages] = await this.pages.find_by_version(version.id);
+    if (pages_error || !pages?.length) throw new NotFound('version has no pages.');
 
-    logger.info(`resolved draft [${id}] version [${version.version_number}]`);
-    return { draft: normalize_draft(draft), version: normalize_version(version), html };
+    const multiple = pages.length > 1;
+    const target = INDEX_PATHS.has(path) ? 'index.html' : path.slice(1);
+
+    if (!multiple && target !== 'index.html') throw new NotFound('page not found.');
+
+    const page = page_candidates(target).map(candidate => pages.find(entry => entry.path === candidate)).find(Boolean);
+    if (!page) throw new NotFound('page not found.');
+
+    logger.info(`resolved draft [${reference}] version [${version.version_number}] page [${page.path}]`);
+    return { draft: normalize_draft(draft), version: normalize_version(version), page, redirect: redirect_path(path, target, page.path, multiple) };
+  };
+
+  read = async (key: string) => {
+    const [error, html] = await this.storage.get(key);
+    if (error || !html) throw new NotFound('page content not found.');
+
+    return html;
   };
 
   list = async (account_id: string) => {
@@ -64,16 +99,16 @@ class DraftsService {
     if (error) throw error;
 
     return (rows ?? []).map(row => ({
-      id: row.id, title: row.title, description: row.description ?? undefined, repo_org: row.repo_org ?? undefined, repo_name: row.repo_name ?? undefined, repo_host: row.repo_host ?? undefined,
+      id: row.id, slug: row.slug, title: row.title, description: row.description ?? undefined, repo_org: row.repo_org ?? undefined, repo_name: row.repo_name ?? undefined, repo_host: row.repo_host ?? undefined,
       latest_version_number: row.latest_version_number ?? undefined, latest_version_at: row.latest_version_at ?? undefined, version_count: Number(row.version_count),
-      disabled: !!row.disabled_at, created_at: row.created_at, updated_at: row.updated_at, public_url: `${config.base}/d/${row.id}`, raw_url: `${config.base}/d/${row.id}/raw`,
+      disabled: !!row.disabled_at, created_at: row.created_at, updated_at: row.updated_at, public_url: `${config.base}/d/${row.slug ?? row.id}${row.page_count > 1 ? '/' : ''}`, raw_url: `${config.base}/d/${row.slug ?? row.id}/raw`,
     }));
   };
 
-  list_versions = async (draft_id: string) => {
-    logger.info(`listing versions for draft [${draft_id}]`);
+  list_versions = async (reference: string) => {
+    logger.info(`listing versions for draft [${reference}]`);
 
-    const [draft_error, draft] = await this.drafts.find_public(draft_id);
+    const [draft_error, draft] = await this.drafts.find_public(reference);
     if (draft_error || !draft) throw new NotFound('draft not found.');
 
     const [versions_error, rows] = await this.versions.find_by_draft(draft.id);

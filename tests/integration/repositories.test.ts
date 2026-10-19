@@ -84,7 +84,7 @@ describe('D1 repositories', () => {
 
     const params = {
       id: 'version-one', draft_id: draft, object_key: 'drafts/version-one.html', content_hash: 'hash', file_size: 10,
-      api_key_id: api_key, has_inline_script: 0 as const, external_image_hosts: '[]',
+      api_key_id: api_key, has_inline_script: 0 as const, external_image_hosts: '[]', page_count: 1,
     };
     const [version_error, version_number] = await versions.create_version(params);
     expect(version_error).toBeNull();

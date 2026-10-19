@@ -11,7 +11,7 @@ class Storage {
     this.bucket = bucket;
   }
 
-  key = (draft_id: string, version_id: string) => `drafts/${draft_id}/versions/${version_id}.html`;
+  key = (draft_id: string, version_id: string, path: string = '') => `drafts/${draft_id}/versions/${version_id}/${path}`;
 
   put = safe(async (key: string, content: string) => {
     logger.info(`storing object for key [${key}]`);

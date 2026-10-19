@@ -13,8 +13,8 @@ class VersionsRepository extends Repository<DraftVersionEntityType> {
     const query = `
       INSERT INTO draft_versions (
         id, draft_id, version_number, object_key, content_hash, file_size, created_at, updated_at, created_by_api_key_id, source_ip, user_agent, cli_version,
-        git_branch, git_commit_sha, git_commit_subject, git_dirty, original_filename, request_id, has_inline_script, external_image_hosts, ci_run_url, ci_actor
-      ) VALUES (?, ?, (SELECT COALESCE(MAX(version_number), 0) + 1 FROM draft_versions WHERE draft_id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        git_branch, git_commit_sha, git_commit_subject, git_dirty, original_filename, request_id, has_inline_script, external_image_hosts, page_count, ci_run_url, ci_actor
+      ) VALUES (?, ?, (SELECT COALESCE(MAX(version_number), 0) + 1 FROM draft_versions WHERE draft_id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING version_number`;
 
     const values = [
@@ -23,7 +23,7 @@ class VersionsRepository extends Repository<DraftVersionEntityType> {
       this.nullable(params.source_ip), this.nullable(params.user_agent), this.nullable(params.cli_version),
       this.nullable(params.git_branch), this.nullable(params.git_commit_sha), this.nullable(params.git_commit_subject),
       this.nullable(params.git_dirty), this.nullable(params.original_filename), this.nullable(params.request_id),
-      params.has_inline_script, params.external_image_hosts,
+      params.has_inline_script, params.external_image_hosts, params.page_count,
       this.nullable(params.ci_run_url), this.nullable(params.ci_actor),
     ];
 

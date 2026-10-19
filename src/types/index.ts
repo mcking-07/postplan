@@ -4,6 +4,7 @@ export type * from './audit';
 export type * from './authentication';
 export type * from './config';
 export type * from './draft';
+export type * from './draft-page';
 export type * from './draft-version';
 export type * from './env';
 export type * from './errors';

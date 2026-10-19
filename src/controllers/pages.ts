@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { cspify, loggerFor, responsify } from '../common';
+import { loggerFor, responsify } from '../common';
 import { NotFound } from '../errors';
 import { services } from '../services';
 import type { ApplicationEnvironmentType } from '../types';
@@ -16,10 +16,16 @@ class PageController {
     const service = this.get_drafts_service();
     logger.info(`serving draft [${id}]`);
 
-    const { draft, version, html } = await service.resolve(id);
-    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
+    const root = `/d/${id}`;
+    const path = context.req.path.slice(root.length);
 
-    return responsify({ status: 200, html, headers }, { cache: true, csp: await cspify(html), coop: true });
+    const { draft, version, page, redirect } = await service.resolve(id, path);
+    if (redirect) return context.redirect(`${root}${redirect}${new URL(context.req.url).search}`);
+
+    const html = await service.read(page.object_key);
+    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-draft-version': String(version.version_number) };
+
+    return responsify({ status: 200, html, headers }, { cache: true, csp: true, coop: true });
   };
 
   version = async (context: Context<ApplicationEnvironmentType>) => {
@@ -32,10 +38,16 @@ class PageController {
     const service = this.get_drafts_service();
     logger.info(`serving draft [${id}] version [${number}]`);
 
-    const { draft, version, html } = await service.resolve(id, { version: number });
-    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-version': String(version.version_number) };
+    const root = `/d/${id}/version/${context.req.param('number')}`;
+    const path = context.req.path.slice(root.length);
 
-    return responsify({ status: 200, html, headers }, { cache: true, csp: await cspify(html), coop: true });
+    const { draft, version, page, redirect } = await service.resolve(id, path, { version: number });
+    if (redirect) return context.redirect(`${root}${redirect}${new URL(context.req.url).search}`);
+
+    const html = await service.read(page.object_key);
+    const headers = { 'x-postplan-draft-id': draft.id, 'x-postplan-draft-version': String(version.version_number) };
+
+    return responsify({ status: 200, html, headers }, { cache: true, csp: true, coop: true });
   };
 }
 

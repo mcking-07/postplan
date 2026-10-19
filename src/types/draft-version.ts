@@ -21,6 +21,7 @@ type DraftVersionEntityType = {
   request_id: NullableType<string>;
   has_inline_script: 0 | 1;
   external_image_hosts: string;
+  page_count: number;
   ci_run_url: NullableType<string>;
   ci_actor: NullableType<string>;
 };
@@ -46,6 +47,7 @@ type DraftVersionType = {
   request_id?: string;
   has_inline_script: 0 | 1;
   external_image_hosts: string;
+  page_count: number;
   ci_run_url?: string;
   ci_actor?: string;
 };
@@ -68,6 +70,7 @@ type CreateVersionParamsType = {
   request_id?: string;
   has_inline_script: 0 | 1;
   external_image_hosts: string;
+  page_count: number;
   ci_run_url?: string;
   ci_actor?: string;
 };

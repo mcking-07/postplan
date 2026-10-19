@@ -1,6 +1,6 @@
 import { loggerFor } from '../common';
 import { ServiceNotRegistered } from '../errors';
-import { AccountsRepository, AuditRepository, Database, DraftsRepository, KeysRepository, VersionsRepository } from '../database';
+import { AccountsRepository, AuditRepository, Database, DraftsRepository, KeysRepository, PagesRepository, VersionsRepository } from '../database';
 import { Storage } from '../storage';
 import { AccountsService } from './accounts';
 import { AuditService } from './audit';
@@ -20,6 +20,7 @@ type RegistryType = {
   'database:audit': AuditRepository;
   'database:drafts': DraftsRepository;
   'database:keys': KeysRepository;
+  'database:pages': PagesRepository;
   'database:versions': VersionsRepository;
   'service:accounts': AccountsService;
   'service:authentication': AuthenticationService;
@@ -75,15 +76,16 @@ const bootstrap = (env: EnvironmentType) => {
   services.register('database:audit', new AuditRepository(services.resolve('database')));
   services.register('database:drafts', new DraftsRepository(services.resolve('database')));
   services.register('database:keys', new KeysRepository(services.resolve('database')));
+  services.register('database:pages', new PagesRepository(services.resolve('database')));
   services.register('database:versions', new VersionsRepository(services.resolve('database')));
 
   services.register('service:accounts', new AccountsService(services.resolve('database:accounts')));
   services.register('service:audit', new AuditService(services.resolve('database:audit')));
   services.register('service:health', new HealthService(services.resolve('database')));
   services.register('service:authentication', new AuthenticationService(services.resolve('database:accounts'), services.resolve('database:keys')));
-  services.register('service:drafts', new DraftsService(services.resolve('database:drafts'), services.resolve('database:versions'), services.resolve('storage')));
+  services.register('service:drafts', new DraftsService(services.resolve('database:drafts'), services.resolve('database:versions'), services.resolve('database:pages'), services.resolve('storage')));
   services.register('service:keys', new KeysService(services.resolve('database:keys')));
-  services.register('service:uploads', new UploadsService(services.resolve('database:drafts'), services.resolve('database:versions'), services.resolve('storage')));
+  services.register('service:uploads', new UploadsService(services.resolve('database:drafts'), services.resolve('database:versions'), services.resolve('database:pages'), services.resolve('storage')));
 
   services.seal();
   logger.info('services initialized');
