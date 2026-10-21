@@ -18,6 +18,9 @@ node_modules/
 # scratchpad
 .scratchpad/
 
+# operations
+operations/
+
 # cloudflare
 .wrangler/
 .dev.vars
