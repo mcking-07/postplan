@@ -17,6 +17,9 @@ enabled = true
 enabled = true
 invocation_logs = true
 
+[observability.issues]
+enabled = true
+
 [observability.traces]
 enabled = true
 persist = false
