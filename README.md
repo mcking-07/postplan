@@ -34,7 +34,7 @@ the hosted instructions cover skill installation, document rules, uploads, draft
 
 ### skill source
 
-the published skill lives in [`public/skills/postplan/`](./public/skills/postplan/). it includes the main `SKILL.md` file and references for planning, reports, diagrams, and document style.
+the published skill lives in [`public/skills/postplan/`](./public/skills/postplan/). it includes the main `SKILL.md` file with references for reading and writing drafts, document rules, uploads, and error handling.
 
 ## for humans
 
@@ -62,6 +62,10 @@ npm run dev
 the local worker runs at `http://localhost:9057`. copy `.dev.vars.example` to `.dev.vars` before using authenticated routes.
 
 ## deploy
+
+the hosted service deploys through cloudflare workers builds on every push to `main`.
+
+to deploy your own copy:
 
 ```bash
 npx wrangler login
