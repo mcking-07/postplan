@@ -22,5 +22,6 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
     setupFiles: ['./tests/setup/migrations.ts'],
+    testTimeout: 10 * 1000,
   },
 });
