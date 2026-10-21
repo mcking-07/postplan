@@ -97,7 +97,7 @@ Write the file inside the project directory. Use `plans/` if it exists, otherwis
 2. Run `postplan upload <file> --json`.
 3. Report the receipt's `url` and `versionUrl`. The artifact is published only when the receipt has `"ok": true`.
 
-The same local file path updates the existing draft, and identical content returns the current version instead of a new one. To update later, run the receipt's `updateCommand`. Use `--new` to create a separate draft. Use `--description` to set a summary of up to 1000 characters; `check` does not see it.
+The same local file path updates the existing draft, and identical content returns the current version instead of a new one. To update later, run the receipt's `updateCommand`. Use `--new` to create a separate draft. Use `--description` to set a summary of up to 1000 characters; `check` does not see it. Use `--slug <name>` with both `check` and `upload` for a custom URL.
 
 ## Folders
 
@@ -110,12 +110,11 @@ Upload a folder to publish linked pages: `postplan upload <folder> --json`.
 
 ## Custom URLs
 
-`postplan upload <file> --slug <name> --json` publishes at `/d/<name>`. The same slug updates the same draft from any machine or path.
+Use a custom URL when the user asks for one, or when `postplan check` prints `Custom URLs: enabled` and you judge the artifact worth sharing. `postplan upload <file> --slug <name> --json` publishes at `/d/<name>`. The same slug updates the same draft from any machine or path.
 
 - `--draft <draft-id> --slug <name>` moves an existing draft to a custom URL and frees its old one.
-- `postplan check --slug <name>` reports `available`, `yours`, `taken`, or `unavailable`.
-- Use 3-40 characters of `a-z`, `0-9`, and inner hyphens. Some names are reserved; `check` reports them.
-- The account needs the `custom-urls` flag, granted by an admin.
+- `postplan check --slug <name>` reports `available`, `yours`, `taken`, or `unavailable`. `yours` means one of your drafts already has the name, and uploading replaces its content. Use it only to update that same artifact; otherwise pick another name.
+- Use 3-40 characters of `a-z`, `0-9`, and inner hyphens that describe the artifact, not a date or version. Some names are reserved; `check` reports them.
 - The CLI help says `<name>.postplan.dev`; on this server the URL is `/d/<name>`. The receipt's `url` is always right.
 
 ## Direct API
@@ -154,7 +153,7 @@ The CLI prints `Upload rejected (HTTP <status>): <error>`, followed by one line 
 These need an action the message does not give:
 
 - 401: get a key from `https://postplan.mcking.in/cli/auth` and run `postplan auth set <key> --api-url https://postplan.mcking.in`.
-- 403: the account lacks a feature flag. Tell the user; an admin grants flags. `postplan check` lists the account's flags.
+- 403: the account lacks a feature flag. Tell the user about it; only an admin grants flags. `postplan check` lists the account's flags.
 - 404 for a draft: it was deleted or belongs to another account. Upload with `--new`.
 - 503: storage failed. Retry the upload.
 
