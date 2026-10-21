@@ -1,9 +1,9 @@
 ---
 name: postplan
-description: Publish artifacts to PostPlan. From documents, reports, and specifications to interactive bundled applications. Use when the user provides a PostPlan URL, asks for a plan or an artifact, or the output is visual, comparative, interactive, or longer than 100 lines. Avoid for short chat answers, code-only responses, or when the user explicitly declines PostPlan.
+description: Publish artifacts to PostPlan. From documents, reports, and specifications to interactive bundled applications, as one page or a folder of linked pages. Use when the user provides a PostPlan URL, asks for a plan or an artifact, or the output is visual, comparative, interactive, or longer than 100 lines. Avoid for short chat answers, code-only responses, HTML that ships in the product, or when the user explicitly declines PostPlan.
 ---
 
-# PostPlan Drafts
+# PostPlan Artifact Publisher
 
 You are an **artifact publisher** for the PostPlan instance at `postplan.mcking.in`.
 
@@ -13,9 +13,11 @@ A PostPlan URL is any URL matching `postplan.mcking.in*`.
 
 When a user supplies a PostPlan URL, fetch the uploaded HTML with the shell. Do not use web search or a browser to retrieve it.
 
-- Remove a trailing slash, then append `/raw` unless the URL already ends in `/raw`
-- Run `curl --fail --silent --show-error --location --max-time 30 --output /tmp/postplan-<slug>.html '<raw-url>'` where `<slug>` is derived from the URL (e.g. the draft ID)
-- Read the downloaded file and continue the requested task
+- Drop any `#fragment` and keep the rest of the URL as given. A page path (`/d/<id>/<page>`) or a version (`/d/<id>/version/<n>`) names exactly what to read.
+- Create a fresh file for each fetch with `mktemp -t postplan.XXXXXX`. It prints a path; call it `<path>`.
+- Run `curl --fail --silent --show-error --location --max-time 30 --dump-header <path>.headers --output <path> --write-out '%{url_effective}\n' '<url>'`. It prints the final URL after redirects.
+- Read the downloaded file and continue the requested task. `x-postplan-draft-version` in the headers file is the version you read; cite it when the user may update the draft later.
+- For a folder draft, resolve relative links against the final URL curl prints (a `<base href>` overrides it), and fetch each page the task needs the same way.
 
 A web-search refusal is not evidence that PostPlan rejected the request. If `curl` fails, report its actual status or network error; do not substitute search results.
 
@@ -58,91 +60,109 @@ Apply these to every artifact:
 
 ## Document Rules
 
-Every artifact runs under a strict Content Security Policy. The server hashes each inline script at serve time and pins it in `script-src`. Only the exact scripts uploaded will execute.
+Every artifact runs in a sandbox with an opaque origin, under a strict Content Security Policy. Inline scripts and `on*` handlers run, but cannot reach PostPlan or browser storage.
 
 Enforced:
 
 - `default-src 'none'`: nothing loads unless explicitly allowed.
-- `script-src` pinned by SHA-256 hash. No `unsafe-inline`, no `unsafe-eval`.
+- `script-src 'unsafe-inline'`: inline classic and `type="module"` scripts and `on*` handlers. Data blocks such as `<script type="application/json">` never run.
 - `style-src 'unsafe-inline' https:`: inline styles, `<style>` blocks, and `@import` stylesheets.
 - `img-src https: data:`: images from HTTPS URLs and data URIs.
 - `font-src https: data:`: web fonts from HTTPS URLs and data URIs.
-- `frame-src https:`: iframes from HTTPS URLs.
-- `media-src https:`: audio and video from HTTPS URLs.
+- `media-src https: data:`: audio and video from HTTPS URLs and data URIs.
 - `connect-src 'none'`: no fetch, no XHR, no WebSocket, no sendBeacon.
-- `base-uri 'none'`: no `<base>` tag.
+- `worker-src 'none'`, `frame-src 'none'`, `object-src 'none'`: no workers, frames, or plugins.
+- `base-uri https:`: a `<base>` tag must use an HTTPS URL.
 - `form-action 'none'`: no form submissions.
+- `sandbox`: localStorage, sessionStorage, indexedDB, and cookies throw; `alert`, `confirm`, and `prompt` do nothing. Popups, `target="_blank"` links, and downloads work. Keep state in memory or in `location.hash`.
 
 Rejected (server returns 422):
 
 - Empty documents
-- Documents exceeding 2 MB (512 KB via the CLI)
+- Uploads over 4 MiB of HTML, all pages combined
 - Nesting depth exceeding 512 levels
 - Meta refresh redirects (`<meta http-equiv="refresh">`)
+- External scripts (`<script src>`) and unknown script types
+- `<form>`, `<iframe>`, `<object>`, `<embed>`, `<applet>`
+- `javascript:`, `vbscript:`, and `file:` URLs
+- `<link>` other than HTTPS stylesheets, icons, preconnects, DNS prefetches, and alternates
 
-Maximum file size: 2 MB (512 KB via the CLI). Maximum nesting depth: 512 levels. Bundled apps work if everything is inlined into one HTML file.
-
-## CLI Constraints
-
-The CLI validates HTML before uploading. These rejections happen locally, before the request reaches the server.
-
-- Blocked tags: `form`, `iframe`, `object`, `embed`, `applet`, `base`, `link`.
-- Blocked attributes: inline event handlers (`on*`), `srcdoc`, `javascript:`/`vbscript:`/`file:` URLs, unsafe CSS expressions in `style`.
-- Blocked scripts: `<script src>` (external sources), `<script type="module">`, `<script type="importmap">`. Only inline classic scripts pass (`text/javascript` or no type attribute).
-- Size limit: 512 KB. The server accepts up to 2 MB, but the CLI rejects anything over 512 KB.
-- Use `@import url(...)` inside a `<style>` block instead of `<link rel="stylesheet">`.
-- Inline external script bodies into a `<script>` tag.
-- Rewrite module scripts as classic, replacing `import`/`export` with IIFE patterns or concatenation.
-
-## Direct Uploads
-
-The CLI blocks tags and patterns the server accepts. When the artifact needs something the CLI rejects and no workaround exists, upload via curl instead.
-
-- Iframes: the CLI blocks `<iframe>`, but the server stores it and the CSP allows `frame-src https:`.
-- Large artifacts over 512 KB. The server accepts up to 2 MB.
-- `<script type="module">` when rewriting to classic is impractical.
-
-```sh
-curl -X POST https://postplan.mcking.in/api/uploads \
-  -H "Authorization: Bearer <api-key>" \
-  -H "Content-Type: application/json" \
-  -d '{"html": "...", "filename": "<name>.html", "description": "<description-or-summary>"}'
-```
-
-To update an existing draft, add `"draftId": "<id>"` to the JSON body. Response fields: `draftId`, `publicUrl`, `rawUrl`, `versionNumber`, `warnings`.
-
-Curl bypasses CLI validation, not the CSP. The server still enforces `connect-src 'none'`, `form-action 'none'`, and hash-pinned `script-src`.
+Bundled apps work if everything is inlined into one HTML file. Local files do not load: PostPlan hosts only HTML, so use an HTTPS or data: URL.
 
 ## Upload
 
 Write the file inside the project directory. Use `plans/` if it exists, otherwise a gitignored scratchpad directory if one exists, otherwise create `.postplan/`. The CLI captures git metadata from the file's parent directory. Files outside a git repo lose git context.
 
+1. Run `postplan check <file>`. Fix every error at the line it names, and treat each warning as something that will break for the reader. Done when it prints `Ready.`
+2. Run `postplan upload <file> --json`.
+3. Report the receipt's `url` and `versionUrl`. The artifact is published only when the receipt has `"ok": true`.
+
+The same local file path updates the existing draft, and identical content returns the current version instead of a new one. To update later, run the receipt's `updateCommand`. Use `--new` to create a separate draft. Use `--description` to set a summary of up to 1000 characters; `check` does not see it.
+
+## Folders
+
+Upload a folder to publish linked pages: `postplan upload <folder> --json`.
+
+- The folder needs an `index.html`. Only `.html` files are uploaded; hidden files and `node_modules` are skipped.
+- Link pages with relative paths (`href="<page>.html"`, `href="<dir>/"`). Inline each page's CSS and JavaScript.
+- Up to 50 pages. A page path cannot start with `v`, `raw`, `version`, `versions`, `api`, or `healthz`.
+- Pages serve at `/d/<id>/<page>`, `/d/<id>/<page>.html`, and `/d/<id>/<dir>/`.
+
+## Custom URLs
+
+`postplan upload <file> --slug <name> --json` publishes at `/d/<name>`. The same slug updates the same draft from any machine or path.
+
+- `--draft <draft-id> --slug <name>` moves an existing draft to a custom URL and frees its old one.
+- `postplan check --slug <name>` reports `available`, `yours`, `taken`, or `unavailable`.
+- Use 3-40 characters of `a-z`, `0-9`, and inner hyphens. Some names are reserved; `check` reports them.
+- The account needs the `custom-urls` flag, granted by an admin.
+- The CLI help says `<name>.postplan.dev`; on this server the URL is `/d/<name>`. The receipt's `url` is always right.
+
+## Direct API
+
+Use the API when Node is not available, or to delete a draft; the CLI has no delete command. Every request needs `Authorization: Bearer <api-key>`.
+
 ```sh
-postplan upload <file>
+curl -X POST https://postplan.mcking.in/api/uploads \
+  -H "Authorization: Bearer <api-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"html": "<html>", "filename": "<file>", "description": "<description>"}'
 ```
 
-Same local file path updates the existing draft. Use `--new` to create a separate draft. Use `--description` to set a summary. If the CLI has not been configured yet, add `--api-url https://postplan.mcking.in`.
-
-The CLI prints a draft URL and a raw URL. Hand the raw URL to another agent when you want the most explicit form.
+- For a folder, send `"files": [{"path": "<page>.html", "html": "<html>"}]` instead of `"html"`.
+- To update a draft, add `"draftId": "<draft-id>"`. For a custom URL, add `"slug": "<name>"`.
+- `POST /api/check` takes the same body and returns the report without publishing.
+- `DELETE /api/drafts/<draft-id>` deletes a draft and frees its custom URL.
 
 ## Viewer Behavior
 
-Every PostPlan URL serves the uploaded artifact to every client. There is no wrapper page, sandbox UI, or consent step. The `/raw` suffix is an alias that returns the same document.
+Every PostPlan URL serves the uploaded artifact to every client. There is no wrapper page, sandbox UI, or consent step. Responses carry `x-postplan-draft-id` and `x-postplan-draft-version`.
 
 ## Draft URLs
+
+`<id>` is the draft ID or the custom URL.
 
 - Current version: `/d/<id>`
 - Raw alias: `/d/<id>/raw`
 - Specific version: `/d/<id>/version/<n>`
+- A page of a folder: `/d/<id>/<page>`, or `/d/<id>/version/<n>/<page>`
 
 ## Error Handling
 
-- 401: missing or invalid API key. Run `postplan auth set <key> --api-url https://postplan.mcking.in`.
-- 404 on upload with `draftId`: the draft was deleted or belongs to another account. Upload without `draftId` or use `--new`.
-- 422: validation failed. The response body contains `errors` (array of rejection reasons) and `warnings`. Fix the artifact and retry.
+The CLI prints `Upload rejected (HTTP <status>): <error>`, followed by one line per problem; with `--json` it prints `status`, `error`, `errors`, and `issues`. Each message names the problem and, where there is one, the fix. The server reports every problem in one response, so fix them all before you retry; the status code alone does not say what failed.
+
+These need an action the message does not give:
+
+- 401: get a key from `https://postplan.mcking.in/cli/auth` and run `postplan auth set <key> --api-url https://postplan.mcking.in`.
+- 403: the account lacks a feature flag. Tell the user; an admin grants flags. `postplan check` lists the account's flags.
+- 404 for a draft: it was deleted or belongs to another account. Upload with `--new`.
+- 503: storage failed. Retry the upload.
+
+## Updates
+
+The CLI and this skill update together from `https://postplan.mcking.in/llms.txt`. A CLI that rejects a command used here is out of date.
 
 ## Operational Rules
 
 - Always use `--api-url https://postplan.mcking.in` with the CLI
 - CLI auth and draft mappings live in `~/.postplan`
-- Never print or log API keys
