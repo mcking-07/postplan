@@ -453,6 +453,7 @@ const banners = `
     margin-bottom: 1.5rem;
     font-size: ${fonts.small};
     border-left: 3px solid;
+    transition: opacity 0.3s;
   }
 
   .banner.success {
@@ -466,6 +467,14 @@ const banners = `
     background: ${colors.surface};
     color: ${colors.muted};
   }
+
+  .banner:has(.undo) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .banner.fading { opacity: 0; }
 `;
 
 const tokens = `
@@ -561,6 +570,40 @@ const components = `
     font-size: ${fonts.xxs};
     color: ${colors.ghost};
     margin-top: 2px;
+  }
+
+  .item .when {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .item .favorite { display: inline-flex; }
+
+  .item .favorite button {
+    display: inline-flex;
+    padding: 0;
+    border: none;
+    background: none;
+    color: ${colors.dim};
+  }
+
+  .item .favorite svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .item .favorite button:hover, .item .favorite button.on { color: ${colors.white}; background: none; }
+  .item .favorite button.on svg { fill: currentColor; }
+
+  @media (hover: hover) {
+    .item .favorite { visibility: hidden; }
+    .item:hover .favorite, .item .favorite:focus-within { visibility: visible; }
   }
 
   .setup {

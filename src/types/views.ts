@@ -2,7 +2,7 @@ import type { AccountFlagType, AccountType } from './account';
 import type { AccountRoleType, PageType } from './shared';
 import type { ApiKeySummaryType } from './api-key';
 import type { AuditEntryType } from './audit';
-import type { DraftGroupType, DraftType } from './draft';
+import type { DraftGroupType, DraftSummaryType, DraftType } from './draft';
 import type { DraftVersionType } from './draft-version';
 
 type ShellParamsType = {
@@ -18,10 +18,13 @@ type DashboardParamsType = {
   email: string;
   role: AccountRoleType;
   grouped: DraftGroupType[];
+  message: FavoriteNotificationType;
   base: string;
   team?: string;
   has_keys: boolean;
 };
+
+type FavoriteNotificationType = { type: 'added' | 'removed'; draft?: DraftSummaryType } | undefined;
 
 type KeyNotificationType =
   | { type: 'created'; token: string }
@@ -59,4 +62,4 @@ type VersionsParamsType = {
   team?: string;
 };
 
-export type { AdminParamsType, DashboardParamsType, KeyNotificationType, KeysParamsType, ShellParamsType, VersionsParamsType };
+export type { AdminParamsType, DashboardParamsType, FavoriteNotificationType, KeyNotificationType, KeysParamsType, ShellParamsType, VersionsParamsType };

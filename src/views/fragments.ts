@@ -15,7 +15,9 @@ const copyable = (value: string) => `<div class="token-row">
   <button type="button" class="copy" onclick="${copy_handler}">copy</button>
 </div>`;
 
-const banner = (variant: string, content: string) => `<div class="banner ${escape(variant)}">${content}</div>`;
+const dismiss_handler = (timeout: number) => `{ const notice = document.currentScript.parentElement; notice.ontransitionend = event => event.target === notice && notice.remove(); setTimeout(() => notice.classList.add('fading'), ${timeout}) }`;
+
+const banner = (variant: string, content: string, timeout?: number) => `<div class="banner ${escape(variant)}">${content}${timeout ? `<script>${dismiss_handler(timeout)}</script>` : ''}</div>`;
 
 const pagination = (label: string, page: number, pages: number, params: Record<string, number>) => {
   if (pages <= 1) return '';

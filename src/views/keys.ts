@@ -23,7 +23,7 @@ const render_keys = ({ email, role, keys, message, base, team }: KeysParamsType)
   const notification = message?.type === 'created'
     ? banner('success', `shown once. copy it now; it won't be shown again.${copyable(message.token)}`)
     : message?.type === 'revoked'
-      ? banner('neutral', 'api key revoked.')
+      ? banner('neutral', 'api key revoked.', 4 * 1000)
       : '';
 
   const body = `

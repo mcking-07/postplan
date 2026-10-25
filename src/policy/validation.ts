@@ -8,10 +8,12 @@ const MAX_PATH_SEGMENTS = 6;
 const MAX_DESCRIPTION_LENGTH = 1000;
 
 const PATH_SEGMENT = /^[A-Za-z0-9_-][A-Za-z0-9._-]*$/;
-const RESERVED_ROOTS = new Set(['v', 'raw', 'version', 'versions', 'api', 'healthz', 'favicon.ico', 'favicon.png', 'favicon.svg']);
+const RESERVED_ROOTS = new Set(['v', 'raw', 'version', 'versions', 'favorite', 'api', 'healthz', 'favicon.ico', 'favicon.png', 'favicon.svg']);
+const PROTECTED_SEGMENTS = new Set(['versions', 'favorite']);
 
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
 const DRAFT_ID_LENGTH = 12;
+
 const RESERVED_SLUGS = new Set([
   'admin', 'api', 'app', 'assets', 'auth', 'blog', 'cdn', 'cli', 'd', 'dashboard', 'docs', 'files', 'help', 'login', 'mail', 'postplan', 'raw', 'signin', 'static', 'status', 'support', 'www',
 ]);
@@ -21,6 +23,7 @@ const BLOCKED_TAGS = new Map<string, string>([
   ['iframe', 'frames do not load. link to the page with <a target="_blank"> instead.'],
   ...['object', 'embed', 'applet'].map((tag): [string, string] => [tag, 'plugins do not load. use <img>, <video>, or <audio> with an https url, or link to the file.']),
 ]);
+
 const ASSET_TAGS = new Set(['img', 'video', 'audio', 'source', 'track']);
 const LINK_TAGS = new Set(['a', 'area']);
 const LINK_RELS = new Set(['stylesheet', 'alternate', 'icon', 'shortcut', 'apple-touch-icon', 'preconnect', 'dns-prefetch']);
@@ -107,6 +110,9 @@ const check_path = (path: string, seen: Set<string>) => {
   const [first_segment = ''] = segments;
   const root = first_segment.replace(/\.html$/, '').toLowerCase();
   if (RESERVED_ROOTS.has(root)) return `page path "${path}" uses the reserved name "${root}".`;
+
+  const protected_segment = segments.map(segment => segment.replace(/\.html$/, '').toLowerCase()).find(segment => PROTECTED_SEGMENTS.has(segment));
+  if (protected_segment) return `page path "${path}" uses the reserved name "${protected_segment}".`;
 
   return seen.has(path) ? `page path "${path}" appears twice.` : undefined;
 };

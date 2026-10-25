@@ -104,6 +104,8 @@ describe('validation policy', () => {
   it.each([
     ['a missing index', [{ path: 'about.html', html: '<title>About</title>' }], 'missing-index'],
     ['a reserved root', [{ path: 'index.html', html: '<title>Home</title>' }, { path: 'raw/x.html', html: '<title>X</title>' }], 'page-path'],
+    ['a reserved action', [{ path: 'index.html', html: '<title>Home</title>' }, { path: 'favorite.html', html: '<title>Favorite</title>' }], 'page-path'],
+    ['a nested reserved action', [{ path: 'index.html', html: '<title>Home</title>' }, { path: 'docs/versions/index.html', html: '<title>Versions</title>' }], 'page-path'],
     ['a duplicate path', [{ path: 'index.html', html: '<title>Home</title>' }, { path: 'index.html', html: '<title>Again</title>' }], 'page-path'],
     ['a deep path', [{ path: 'index.html', html: '<title>Home</title>' }, { path: 'a/b/c/d/e/f/g.html', html: '<title>G</title>' }], 'page-path'],
     ['a non html path', [{ path: 'index.html', html: '<title>Home</title>' }, { path: 'notes.txt', html: 'x' }], 'page-path'],

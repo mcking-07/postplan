@@ -30,6 +30,7 @@ const configure = (router: Hono<ApplicationEnvironmentType>) => {
   router.post('/cli/auth/generate', require_access(), controllers.auth.generate);
   router.post('/cli/auth/revoke/:id', require_access(), controllers.auth.revoke);
   router.get('/d/:id/versions', require_access(), controllers.versions.list);
+  router.post('/d/:id/favorite', require_access(), controllers.dashboard.favorite);
 
   // draft pages
   router.get('/d/:id/version/:number/raw', controllers.pages.version);
