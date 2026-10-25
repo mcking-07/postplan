@@ -3,7 +3,7 @@ import { config } from '../config';
 import { NotFound } from '../errors';
 import type { DraftsRepository, PagesRepository, VersionsRepository } from '../database';
 import type { Storage } from '../storage';
-import type { DraftEntityType, DraftType, DraftVersionEntityType, DraftVersionType, ResolveOptionsType, ResolvedDraftType } from '../types';
+import type { DraftEntityType, DraftSummaryType, DraftType, DraftVersionEntityType, DraftVersionType, ResolveOptionsType, ResolvedDraftType } from '../types';
 
 const logger = loggerFor('services/drafts');
 
@@ -24,6 +24,8 @@ const redirect_path = (path: string, target: string, page: string, multiple: boo
   return undefined;
 };
 
+const favorites_first = (left: DraftSummaryType, right: DraftSummaryType) => Number(right.favorite) - Number(left.favorite);
+
 const normalize_draft = (draft: DraftEntityType): DraftType => ({
   ...draft,
   slug: draft.slug ?? undefined,
@@ -35,6 +37,7 @@ const normalize_draft = (draft: DraftEntityType): DraftType => ({
   deleted_at: draft.deleted_at ?? undefined,
   disabled_at: draft.disabled_at ?? undefined,
   disabled_reason: draft.disabled_reason ?? undefined,
+  favorited_at: draft.favorited_at ?? undefined,
 });
 
 const normalize_version = (version: DraftVersionEntityType): DraftVersionType => ({
@@ -101,8 +104,9 @@ class DraftsService {
     return (rows ?? []).map(row => ({
       id: row.id, slug: row.slug, title: row.title, description: row.description ?? undefined, repo_org: row.repo_org ?? undefined, repo_name: row.repo_name ?? undefined, repo_host: row.repo_host ?? undefined,
       latest_version_number: row.latest_version_number ?? undefined, latest_version_at: row.latest_version_at ?? undefined, version_count: Number(row.version_count),
-      disabled: !!row.disabled_at, created_at: row.created_at, updated_at: row.updated_at, public_url: `${config.base}/d/${row.slug ?? row.id}${row.page_count > 1 ? '/' : ''}`, raw_url: `${config.base}/d/${row.slug ?? row.id}/raw`,
-    }));
+      disabled: !!row.disabled_at, favorite: !!row.favorited_at,
+      created_at: row.created_at, updated_at: row.updated_at, public_url: `${config.base}/d/${row.slug ?? row.id}${row.page_count > 1 ? '/' : ''}`, raw_url: `${config.base}/d/${row.slug ?? row.id}/raw`,
+    })).sort(favorites_first);
   };
 
   list_versions = async (reference: string) => {
@@ -122,6 +126,15 @@ class DraftsService {
     const result = await this.drafts.paginate(page, size);
 
     return { ...result, rows: result.rows.map(normalize_draft) };
+  };
+
+  favorite = async (reference: string, account_id: string, favorite: boolean) => {
+    logger.info(`setting favorite [${favorite}] on draft [${reference}] for account [${account_id}]`);
+
+    const [error, draft] = await this.drafts.set_favorite(reference, account_id, favorite);
+    if (error || !draft) throw new NotFound('draft not found on your account.');
+
+    return draft;
   };
 
   remove = async (id: string, account_id: string) => {

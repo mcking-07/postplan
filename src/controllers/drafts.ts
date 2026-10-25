@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import { loggerFor, outbound, responsify, schedule } from '../common';
-import { NotFound } from '../errors';
+import { BadRequest, NotFound } from '../errors';
 import { services } from '../services';
 import type { BearerVariablesType } from '../types';
 
@@ -18,6 +18,32 @@ class DraftController {
     const results = await service.list(id);
 
     return responsify({ status: 200, body: outbound({ ok: true, drafts: results }) });
+  };
+
+  favorite = async (context: Context<BearerVariablesType>) => {
+    const account = context.get('account');
+    const key = context.get('key');
+
+    const reference = context.req.param('id');
+    if (!reference) throw new NotFound('draft not found on your account.');
+
+    const { favorite } = await context.req.json().catch(() => {
+      throw new BadRequest('invalid request body.');
+    });
+    if (typeof favorite !== 'boolean') throw new BadRequest('favorite must be true or false.');
+
+    const service = this.get_drafts_service();
+    const audit = this.get_audit_service();
+
+    logger.info(`setting favorite [${favorite}] on draft [${reference}] for account [${account.id}]`);
+    const { id } = await service.favorite(reference, account.id, favorite);
+
+    schedule(context, audit.record({
+      account_id: account.id, api_key_id: key.id, action: 'draft.update', resource_type: 'draft', resource_id: id, metadata: { favorite },
+      source_ip: context.req.header('x-real-ip') ?? context.req.header('cf-connecting-ip'), user_agent: context.req.header('user-agent'),
+    }), 'draft favorite audit');
+
+    return responsify({ status: 200, body: outbound({ ok: true, draft_id: id, favorite }) });
   };
 
   remove = async (context: Context<BearerVariablesType>) => {

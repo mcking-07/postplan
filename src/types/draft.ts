@@ -17,6 +17,7 @@ type DraftEntityType = {
   deleted_at: NullableType<string>;
   disabled_at: NullableType<string>;
   disabled_reason: NullableType<string>;
+  favorited_at: NullableType<string>;
 };
 
 type DraftType = {
@@ -34,6 +35,7 @@ type DraftType = {
   deleted_at?: string;
   disabled_at?: string;
   disabled_reason?: string;
+  favorited_at?: string;
 };
 
 type DraftSummaryRowType = {
@@ -47,6 +49,7 @@ type DraftSummaryRowType = {
   created_at: string;
   updated_at: string;
   disabled_at: NullableType<string>;
+  favorited_at: NullableType<string>;
   latest_version_number: NullableType<number>;
   latest_version_at: NullableType<string>;
   page_count: number;
@@ -65,6 +68,7 @@ type DraftSummaryType = {
   latest_version_at?: string;
   version_count: number;
   disabled: boolean;
+  favorite: boolean;
   created_at: string;
   updated_at: string;
   public_url: string;

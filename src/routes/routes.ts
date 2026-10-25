@@ -53,6 +53,7 @@ const configure = (router: Hono<ApplicationEnvironmentType>) => {
   router.get('/api/me', require_bearer(), controllers.auth.me);
   router.get('/api/drafts', require_bearer(), controllers.drafts.list);
   router.delete('/api/drafts/:id', require_bearer(), controllers.drafts.remove);
+  router.post('/api/drafts/:id/favorite', require_bearer(), controllers.drafts.favorite);
   router.get('/api/api-keys', require_bearer(), controllers.keys.list);
   router.post('/api/api-keys', require_bearer(), controllers.keys.create);
   router.post('/api/api-keys/:id/revoke', require_bearer(), controllers.keys.revoke);

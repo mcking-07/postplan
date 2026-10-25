@@ -1,4 +1,4 @@
-import { exports } from 'cloudflare:workers';
+import { env, exports } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { hash } from '../../src/common';
 import { create_repositories } from '../setup';
@@ -89,6 +89,7 @@ describe('worker routes', () => {
 
     const public_response = await exports.default.fetch(created.publicUrl);
     expect(public_response.status).toBe(404);
+    expect((await exports.default.fetch(`http://localhost/api/drafts/${created.draftId}/favorite`, { method: 'POST', headers: { Authorization: `Bearer ${owner.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ favorite: true }) })).status).toBe(404);
   });
 
   it('lists only the authenticated account drafts', async () => {
@@ -101,5 +102,43 @@ describe('worker routes', () => {
     expect(response.status).toBe(200);
     const body = await response.json() as { drafts: unknown[] };
     expect(body.drafts).toHaveLength(0);
+
+    const newer = await exports.default.fetch('http://localhost/api/uploads', { method: 'POST', headers: { Authorization: `Bearer ${first.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ html: html.replace('content', 'newer') }) });
+    const { draftId: newer_id } = await newer.json() as { draftId: string };
+    const list = async () => (await (await exports.default.fetch('http://localhost/api/drafts', { headers: { Authorization: `Bearer ${first.token}` } })).json() as { drafts: { id: string; favorite: boolean; updatedAt: string }[] }).drafts;
+    const [latest, older] = await list();
+    expect(latest).toMatchObject({ id: newer_id, favorite: false });
+    if (!older) throw new Error('expected an older draft');
+
+    const favorite = (token: string, reference: string, payload: unknown) => exports.default.fetch(`http://localhost/api/drafts/${reference}/favorite`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+    });
+
+    const malformed = await exports.default.fetch(`http://localhost/api/drafts/${older.id}/favorite`, { method: 'POST', headers: { Authorization: `Bearer ${first.token}`, 'Content-Type': 'application/json' }, body: 'not json' });
+    expect(malformed.status).toBe(400);
+    await expect(malformed.json()).resolves.toMatchObject({ error: 'invalid request body.' });
+
+    const invalid = await favorite(first.token, older.id, { favorite: 'yes' });
+    expect(invalid.status).toBe(400);
+    await expect(invalid.json()).resolves.toMatchObject({ error: 'favorite must be true or false.' });
+
+    const foreign = await favorite(second.token, older.id, { favorite: true });
+    expect(foreign.status).toBe(404);
+    await expect(foreign.json()).resolves.toMatchObject({ error: 'draft not found on your account.' });
+
+    const starred = await favorite(first.token, older.id.toUpperCase(), { favorite: true });
+    expect(starred.status).toBe(200);
+    await expect(starred.json()).resolves.toEqual({ ok: true, draftId: older.id, favorite: true });
+    const [top, next] = await list();
+    expect(top).toMatchObject({ id: older.id, favorite: true, updatedAt: older.updatedAt });
+    expect(next?.id).toBe(newer_id);
+    await expect(env.DATABASE.prepare('SELECT metadata FROM audit_log WHERE action = ? AND resource_id = ?').bind('draft.update', older.id).first('metadata')).resolves.toBe('{"favorite":true}');
+
+    const unstarred = await favorite(first.token, older.id, { favorite: false });
+    expect(unstarred.status).toBe(200);
+    expect((await list()).map(draft => draft.id)).toEqual([newer_id, older.id]);
+
+    await env.DATABASE.prepare('UPDATE drafts SET disabled_at = ? WHERE id = ?').bind(new Date().toISOString(), newer_id).run();
+    expect((await favorite(first.token, newer_id, { favorite: true })).status).toBe(404);
   });
 });

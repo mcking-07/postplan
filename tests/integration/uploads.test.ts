@@ -158,6 +158,8 @@ describe('worker uploads', () => {
     await expect(rename_response.json()).resolves.toMatchObject({ draftId: created.draftId, slug: 'new-plan', unchanged: true, publicUrl: 'http://localhost:9057/d/new-plan' });
     expect((await exports.default.fetch('http://localhost/d/my-plan')).status).toBe(404);
     expect((await exports.default.fetch('http://localhost/d/new-plan')).status).toBe(200);
+    const slug_favorite = await exports.default.fetch('http://localhost/api/drafts/new-plan/favorite', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ favorite: true }) });
+    await expect(slug_favorite.json()).resolves.toEqual({ ok: true, draftId: created.draftId, favorite: true });
 
     const list_response = await exports.default.fetch('http://localhost/api/drafts', { headers: { Authorization: `Bearer ${token}` } });
     const { drafts } = await list_response.json() as { drafts: { id: string; slug?: string; publicUrl: string; }[]; };

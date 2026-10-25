@@ -58,10 +58,15 @@ class DraftsRepository extends Repository<DraftEntityType> {
     return this.database.get<Pick<DraftEntityType, 'id'>>('UPDATE drafts SET disabled_at = ?, disabled_reason = ?, updated_at = ? WHERE id = ? COLLATE NOCASE AND deleted_at IS NULL RETURNING id', [timestamp, reason, timestamp, id]);
   });
 
+  set_favorite = safe(async (reference: string, account_id: string, favorite: boolean) => {
+    const query = 'UPDATE drafts SET favorited_at = ? WHERE (id = ? COLLATE NOCASE OR slug = ?) AND account_id = ? AND deleted_at IS NULL AND disabled_at IS NULL RETURNING id';
+    return this.database.get<Pick<DraftEntityType, 'id'>>(query, [favorite ? this.timestamp() : null, reference, reference, account_id]);
+  });
+
   list_with_stats = safe(async (account_id: string) => {
     const query = `
       SELECT
-        drafts.id, drafts.slug, drafts.title, drafts.description, drafts.repo_org, drafts.repo_name, drafts.repo_host, drafts.created_at, drafts.updated_at, drafts.disabled_at,
+        drafts.id, drafts.slug, drafts.title, drafts.description, drafts.repo_org, drafts.repo_name, drafts.repo_host, drafts.created_at, drafts.updated_at, drafts.disabled_at, drafts.favorited_at,
         current_version.version_number AS latest_version_number, current_version.created_at AS latest_version_at, COALESCE(current_version.page_count, 1) AS page_count, COALESCE(version_counts.total, 0) AS version_count
       FROM drafts
       LEFT JOIN draft_versions AS current_version ON current_version.id = drafts.current_version_id
