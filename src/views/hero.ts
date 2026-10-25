@@ -2,7 +2,7 @@ import { standalone } from './layout';
 import { hero_styles } from './styles';
 import { escape } from './helpers';
 
-const setup_prompt = 'read and follow the instructions at https://postplan.mcking.in/llms.txt and set up postplan on this machine.';
+const setup_prompt = 'read and follow the instructions at https://postplan.mcking.in/llms.txt and set up and/or update postplan on this machine.';
 
 const setup_agents = ['claude', 'codex', 'cursor', 'opencode'];
 const setup_icons = setup_agents.map(agent => `<img src="/icons/${agent}.svg" alt="${agent}">`).join('');

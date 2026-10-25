@@ -27,7 +27,7 @@ read the complete setup instructions in [`public/llms.txt`](./public/llms.txt).
 ### setup prompt
 
 ```text
-read and follow the instructions at https://postplan.mcking.in/llms.txt and set up postplan on this machine.
+read and follow the instructions at https://postplan.mcking.in/llms.txt and set up and/or update postplan on this machine.
 ```
 
 the hosted instructions cover skill installation, document rules, uploads, draft urls, and api behavior.

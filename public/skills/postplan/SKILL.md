@@ -18,6 +18,8 @@ When a user supplies a PostPlan URL, fetch the uploaded HTML with the shell. Do 
 - Run `curl --fail --silent --show-error --location --max-time 30 --dump-header <path>.headers --output <path> --write-out '%{url_effective}\n' '<url>'`. It prints the final URL after redirects.
 - Read the downloaded file and continue the requested task. `x-postplan-draft-version` in the headers file is the version you read; cite it when the user may update the draft later.
 - For a folder draft, resolve relative links against the final URL curl prints (a `<base href>` overrides it), and fetch each page the task needs the same way.
+- Ignore the `/cdn-cgi/challenge-platform` script in a served page. Cloudflare adds it at the edge.
+- To edit a draft and upload it again, use `postplan download`. Do not upload a copy fetched with curl.
 
 A web-search refusal is not evidence that PostPlan rejected the request. If `curl` fails, report its actual status or network error; do not substitute search results.
 
@@ -94,10 +96,12 @@ Bundled apps work if everything is inlined into one HTML file. Local files do no
 Write the file inside the project directory. Use `plans/` if it exists, otherwise a gitignored scratchpad directory if one exists, otherwise create `.postplan/`. The CLI captures git metadata from the file's parent directory. Files outside a git repo lose git context.
 
 1. Run `postplan check <file>`. Fix every error at the line it names, and treat each warning as something that will break for the reader. Done when it prints `Ready.`
-2. Run `postplan upload <file> --json`.
-3. Report the receipt's `url` and `versionUrl`. The artifact is published only when the receipt has `"ok": true`.
+2. Run `postplan upload <file> --json` without a pipe. A pipe through `tail` or `head` hides a failed exit code.
+3. Report the receipt's `url` and `versionUrl`. The artifact is published only when the receipt has `"ok": true`. A written file or a started background job is not a receipt.
 
 The same local file path updates the existing draft, and identical content returns the current version instead of a new one. To update later, run the receipt's `updateCommand`. Use `--new` to create a separate draft. Use `--description` to set a summary of up to 1000 characters; `check` does not see it. Use `--slug <name>` with both `check` and `upload` for a custom URL.
+
+To edit a published draft that is not on this machine, run `postplan download <url> --json`. It writes a new file and prints the `uploadCommand` for your edits.
 
 ## Folders
 
@@ -105,7 +109,8 @@ Upload a folder to publish linked pages: `postplan upload <folder> --json`.
 
 - The folder needs an `index.html`. Only `.html` files are uploaded; hidden files and `node_modules` are skipped.
 - Link pages with relative paths (`href="<page>.html"`, `href="<dir>/"`). Inline each page's CSS and JavaScript.
-- Up to 50 pages. A page path cannot start with `v`, `raw`, `version`, `versions`, `api`, or `healthz`.
+- Up to 50 pages. A page path cannot start with `v`, `raw`, `version`, `api`, or `healthz`, and no part of it can be `versions` or `favorite`.
+- If `check` reports an upload over the limit, split it into linked pages and tell the user. Keep every requested section.
 - Pages serve at `/d/<id>/<page>`, `/d/<id>/<page>.html`, and `/d/<id>/<dir>/`.
 
 ## Custom URLs
@@ -119,7 +124,7 @@ Use a custom URL when the user asks for one, or when `postplan check` prints `Cu
 
 ## Direct API
 
-Use the API when Node is not available, or to delete a draft; the CLI has no delete command. Every request needs `Authorization: Bearer <api-key>`.
+Use the API when Node is not available, or to delete a draft; the CLI has no delete command. Every request needs `Authorization: Bearer <api-key>`, except `GET /api/drafts/<draft-id>/source`.
 
 ```sh
 curl -X POST https://postplan.mcking.in/api/uploads \
@@ -132,6 +137,8 @@ curl -X POST https://postplan.mcking.in/api/uploads \
 - To update a draft, add `"draftId": "<draft-id>"`. For a custom URL, add `"slug": "<name>"`.
 - `POST /api/check` takes the same body and returns the report without publishing.
 - `DELETE /api/drafts/<draft-id>` deletes a draft and frees its custom URL.
+- `GET /api/drafts/<draft-id>/source` returns the current version's pages as JSON. With a key, `owned` says whether the draft is yours.
+- `POST /api/drafts/<draft-id>/favorite` with `{"favorite": true}` pins the draft to the top of the user's list. Send `false` to unpin it.
 
 ## Viewer Behavior
 
@@ -165,3 +172,4 @@ The CLI and this skill update together from `https://postplan.mcking.in/llms.txt
 
 - Always use `--api-url https://postplan.mcking.in` with the CLI
 - CLI auth and draft mappings live in `~/.postplan`
+- Run `postplan <command> --help` to see every option of a command.

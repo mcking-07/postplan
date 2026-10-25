@@ -21,7 +21,7 @@ To update the CLI and the skill, re-run steps 1 and 2. If the skill file already
 
 ## Documentation
 
-- [PostPlan Skill](https://postplan.mcking.in/skills/postplan/SKILL.md): Reading and uploading drafts, document rules, writing rules, anti-patterns, the direct API, and error handling.
+- [PostPlan Skill](https://postplan.mcking.in/skills/postplan/SKILL.md): Reading, downloading, and uploading drafts, document rules, writing rules, anti-patterns, the direct API, and error handling.
 
 ## API
 
@@ -31,6 +31,8 @@ To update the CLI and the skill, re-run steps 1 and 2. If the skill file already
 - POST /api/check: validate an upload and check a custom URL without publishing (bearer auth)
 - GET /api/drafts: list drafts (bearer auth)
 - GET /api/me: account info (bearer auth)
+- GET /api/drafts/<id>/source: current version's pages as JSON (public, optional bearer auth)
+- POST /api/drafts/<id>/favorite: favorite or unfavorite a draft (bearer auth)
 - GET /d/<id>: serve current version (public)
 - GET /d/<id>/version/<n>: serve specific version (public)
 - GET /d/<id>/<page>: serve a page of a folder draft (public)
