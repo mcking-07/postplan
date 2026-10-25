@@ -1,5 +1,5 @@
 import type { Hono } from 'hono';
-import { limit_upload, require_access, require_admin, require_bearer } from '../middlewares';
+import { accept_bearer, limit_upload, require_access, require_admin, require_bearer } from '../middlewares';
 import type { ApplicationEnvironmentType } from '../types';
 import { AdminController, AuthController, DashboardController, DraftController, HealthController, KeyController, PageController, UploadController, VersionController } from '../controllers';
 
@@ -54,6 +54,7 @@ const configure = (router: Hono<ApplicationEnvironmentType>) => {
   router.get('/api/drafts', require_bearer(), controllers.drafts.list);
   router.delete('/api/drafts/:id', require_bearer(), controllers.drafts.remove);
   router.post('/api/drafts/:id/favorite', require_bearer(), controllers.drafts.favorite);
+  router.get('/api/drafts/:id/source', accept_bearer(), controllers.drafts.source);
   router.get('/api/api-keys', require_bearer(), controllers.keys.list);
   router.post('/api/api-keys', require_bearer(), controllers.keys.create);
   router.post('/api/api-keys/:id/revoke', require_bearer(), controllers.keys.revoke);

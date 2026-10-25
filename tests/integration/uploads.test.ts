@@ -94,6 +94,15 @@ describe('worker uploads', () => {
     const missing_version_response = await exports.default.fetch(`http://localhost/d/${created.draftId}/version/999`);
     expect(missing_version_response.status).toBe(404);
 
+    const source = (reference: string, init?: RequestInit) => exports.default.fetch(`http://localhost/api/drafts/${reference}/source`, init);
+    const owned_source = await source(created.draftId.toUpperCase(), { headers: { Authorization: `Bearer ${token}` } });
+    expect(owned_source.status).toBe(200);
+    await expect(owned_source.json()).resolves.toEqual({ ok: true, draftId: created.draftId, slug: null, title: 'Integration Plan', versionNumber: 2, owned: true, pages: [{ path: 'index.html', html: updated_html }] });
+    await expect((await source(created.draftId)).json()).resolves.toMatchObject({ owned: false, versionNumber: 2 });
+    await expect((await source(created.draftId, { headers: { Authorization: 'Bearer pp_rejected' } })).json()).resolves.toMatchObject({ owned: false, versionNumber: 2 });
+    const { token: other_token } = await create_authentication('upload-flow-other@example.com');
+    await expect((await source(created.draftId, { headers: { Authorization: `Bearer ${other_token}` } })).json()).resolves.toMatchObject({ owned: false });
+
     const { drafts } = create_repositories();
     const [disable_error, disabled] = await drafts.disable(created.draftId, 'integration test');
     expect(disable_error).toBeNull();
@@ -103,6 +112,10 @@ describe('worker uploads', () => {
       method: 'POST', headers, body: JSON.stringify({ html: updated_html, draftId: created.draftId }),
     });
     expect(blocked_response.status).toBe(404);
+
+    const disabled_source = await source(created.draftId, { headers: { Authorization: `Bearer ${token}` } });
+    expect(disabled_source.status).toBe(404);
+    await expect(disabled_source.json()).resolves.toMatchObject({ error: 'draft not found.' });
 
     const [draft_error, draft] = await drafts.find_owned(created.draftId, account_id);
     expect(draft_error).toBeNull();
@@ -158,6 +171,7 @@ describe('worker uploads', () => {
     await expect(rename_response.json()).resolves.toMatchObject({ draftId: created.draftId, slug: 'new-plan', unchanged: true, publicUrl: 'http://localhost:9057/d/new-plan' });
     expect((await exports.default.fetch('http://localhost/d/my-plan')).status).toBe(404);
     expect((await exports.default.fetch('http://localhost/d/new-plan')).status).toBe(200);
+    await expect((await exports.default.fetch('http://localhost/api/drafts/NEW-PLAN/source')).json()).resolves.toMatchObject({ draftId: created.draftId, slug: 'new-plan', owned: false });
     const slug_favorite = await exports.default.fetch('http://localhost/api/drafts/new-plan/favorite', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ favorite: true }) });
     await expect(slug_favorite.json()).resolves.toEqual({ ok: true, draftId: created.draftId, favorite: true });
 
@@ -330,6 +344,15 @@ describe('worker uploads', () => {
     const list_response = await exports.default.fetch('http://localhost/api/drafts', { headers });
     const { drafts } = await list_response.json() as { drafts: { id: string; publicUrl: string }[] };
     expect(drafts.find(entry => entry.id === created.draftId)?.publicUrl).toBe(`${root}/`);
+
+    const source_response = await exports.default.fetch(`http://localhost/api/drafts/${created.draftId}/source`, { headers });
+    await expect(source_response.json()).resolves.toMatchObject({ owned: true, versionNumber: 1, pages: [...files].sort((left, right) => left.path.localeCompare(right.path)) });
+
+    const about_key = await env.DATABASE.prepare('SELECT object_key FROM draft_pages WHERE path = ? AND draft_version_id = (SELECT current_version_id FROM drafts WHERE id = ?)').bind('about.html', created.draftId).first<string>('object_key');
+    await env.STORAGE.delete(about_key ?? '');
+    const broken_source = await exports.default.fetch(`http://localhost/api/drafts/${created.draftId}/source`, { headers });
+    expect(broken_source.status).toBe(503);
+    await expect(broken_source.json()).resolves.toMatchObject({ error: '1 of 3 pages failed to load. try again.' });
 
     const versions_response = await exports.default.fetch(`${draft}/versions`);
     expect(versions_response.status).toBe(200);

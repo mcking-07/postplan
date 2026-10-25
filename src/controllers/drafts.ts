@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import { loggerFor, outbound, responsify, schedule } from '../common';
 import { BadRequest, NotFound } from '../errors';
 import { services } from '../services';
-import type { BearerVariablesType } from '../types';
+import type { BearerVariablesType, OptionalBearerVariablesType } from '../types';
 
 const logger = loggerFor('controllers/drafts');
 
@@ -44,6 +44,19 @@ class DraftController {
     }), 'draft favorite audit');
 
     return responsify({ status: 200, body: outbound({ ok: true, draft_id: id, favorite }) });
+  };
+
+  source = async (context: Context<OptionalBearerVariablesType>) => {
+    const reference = context.req.param('id');
+    if (!reference) throw new NotFound('draft not found.');
+
+    const account = context.get('account');
+    const service = this.get_drafts_service();
+
+    logger.info(`reading source of draft [${reference}] for account [${account?.id ?? 'anonymous'}]`);
+    const source = await service.source(reference, account?.id);
+
+    return responsify({ status: 200, body: outbound({ ok: true, ...source }) });
   };
 
   remove = async (context: Context<BearerVariablesType>) => {

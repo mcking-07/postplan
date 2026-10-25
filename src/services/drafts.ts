@@ -1,6 +1,6 @@
-import { loggerFor } from '../common';
+import { loggerFor, settle } from '../common';
 import { config } from '../config';
-import { NotFound } from '../errors';
+import { NotFound, ServiceUnavailable } from '../errors';
 import type { DraftsRepository, PagesRepository, VersionsRepository } from '../database';
 import type { Storage } from '../storage';
 import type { DraftEntityType, DraftSummaryType, DraftType, DraftVersionEntityType, DraftVersionType, ResolveOptionsType, ResolvedDraftType } from '../types';
@@ -107,6 +107,23 @@ class DraftsService {
       disabled: !!row.disabled_at, favorite: !!row.favorited_at,
       created_at: row.created_at, updated_at: row.updated_at, public_url: `${config.base}/d/${row.slug ?? row.id}${row.page_count > 1 ? '/' : ''}`, raw_url: `${config.base}/d/${row.slug ?? row.id}/raw`,
     })).sort(favorites_first);
+  };
+
+  source = async (reference: string, account_id?: string) => {
+    logger.info(`reading source of draft [${reference}]`);
+
+    const [draft_error, draft] = await this.drafts.find_public(reference);
+    if (draft_error || !draft) throw new NotFound('draft not found.');
+
+    const version = await this.find_current_version(draft);
+
+    const [pages_error, pages] = await this.pages.find_by_version(version.id);
+    if (pages_error || !pages?.length) throw new NotFound('version has no pages.');
+
+    const { values, errors } = await settle(pages, async page => ({ path: page.path, html: await this.read(page.object_key) }));
+    if (errors.length) throw new ServiceUnavailable(`${errors.length} of ${pages.length} pages failed to load. try again.`);
+
+    return { draft_id: draft.id, slug: draft.slug, title: draft.title, version_number: version.version_number, owned: draft.account_id === account_id, pages: values };
   };
 
   list_versions = async (reference: string) => {

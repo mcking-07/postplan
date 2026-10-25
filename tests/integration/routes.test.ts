@@ -89,6 +89,7 @@ describe('worker routes', () => {
 
     const public_response = await exports.default.fetch(created.publicUrl);
     expect(public_response.status).toBe(404);
+    expect((await exports.default.fetch(`http://localhost/api/drafts/${created.draftId}/source`, { headers: { Authorization: `Bearer ${owner.token}` } })).status).toBe(404);
     expect((await exports.default.fetch(`http://localhost/api/drafts/${created.draftId}/favorite`, { method: 'POST', headers: { Authorization: `Bearer ${owner.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ favorite: true }) })).status).toBe(404);
   });
 

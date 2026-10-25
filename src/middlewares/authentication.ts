@@ -1,7 +1,7 @@
 import { createMiddleware } from 'hono/factory';
 import { Unauthorized } from '../errors';
 import { services } from '../services';
-import type { AccessVariablesType, BearerVariablesType } from '../types';
+import type { AccessVariablesType, BearerVariablesType, OptionalBearerVariablesType } from '../types';
 
 const get_authentication_service = () => services.resolve('service:authentication');
 
@@ -14,6 +14,19 @@ const require_bearer = () => createMiddleware<BearerVariablesType>(async (contex
 
   context.set('account', result.account);
   context.set('key', result.key);
+
+  await next();
+});
+
+const accept_bearer = () => createMiddleware<OptionalBearerVariablesType>(async (context, next) => {
+  const token = context.req.header('authorization')?.replace(/^Bearer\s+/i, '').trim();
+  if (!token) return next();
+
+  const authentication = get_authentication_service();
+  const result = await authentication.verify_bearer(token).catch(() => null);
+
+  if (result?.account) context.set('account', result.account);
+  if (result?.key) context.set('key', result.key);
 
   await next();
 });
@@ -36,4 +49,4 @@ const require_admin = () => createMiddleware<AccessVariablesType>(async (context
   await next();
 });
 
-export { require_access, require_admin, require_bearer };
+export { accept_bearer, require_access, require_admin, require_bearer };

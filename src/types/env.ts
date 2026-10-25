@@ -29,4 +29,11 @@ type BearerVariablesType = {
   };
 };
 
-export type { AccessVariablesType, ApplicationEnvironmentType, BearerVariablesType, EnvironmentType };
+type OptionalBearerVariablesType = {
+  Variables: {
+    account?: BearerAccountContextType;
+    key?: ApiKeyContextType;
+  };
+};
+
+export type { AccessVariablesType, ApplicationEnvironmentType, BearerVariablesType, EnvironmentType, OptionalBearerVariablesType };
