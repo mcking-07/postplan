@@ -35,7 +35,7 @@ class DraftController {
     if (!removed) throw new NotFound('draft not found.');
 
     schedule(context, audit.record({
-      account_id: account.id, api_key_id: key.id, action: 'draft.delete', resource_type: 'draft', resource_id: draft_id,
+      account_id: account.id, api_key_id: key.id, action: 'draft.delete', resource_type: 'draft', resource_id: removed.id,
       source_ip: context.req.header('x-real-ip') ?? context.req.header('cf-connecting-ip'), user_agent: context.req.header('user-agent'),
     }), 'draft deletion audit');
 

@@ -129,7 +129,7 @@ class UploadsService {
     const { status, message = '' } = ownership(account_id, slug, draft_by_slug);
 
     if (status !== 'yours') throw new Conflict(message);
-    if (draft_id && draft_by_slug.id !== draft_id) throw new Conflict(`the custom url "${slug}" already names draft ${draft_by_slug.id}. upload with --slug alone to update it.`);
+    if (draft_id && draft_by_slug.id.toLowerCase() !== draft_id.toLowerCase()) throw new Conflict(`the custom url "${slug}" already names draft ${draft_by_slug.id}. upload with --slug alone to update it.`);
 
     return draft_by_slug;
   };

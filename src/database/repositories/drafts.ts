@@ -1,3 +1,4 @@
+import { customAlphabet as custom_nanoid } from 'nanoid';
 import { safe } from '../../common';
 import type { Database } from '../database';
 import { Repository } from './repository';
@@ -8,12 +9,14 @@ class DraftsRepository extends Repository<DraftEntityType> {
     super(database, 'drafts');
   }
 
+  protected override id = () => custom_nanoid('0123456789abcdefghijklmnopqrstuvwxyz')(12);
+
   find_by_id = safe(async (id: string) => {
-    return this.database.get<DraftEntityType>('SELECT * FROM drafts WHERE id = ?', [id]);
+    return this.database.get<DraftEntityType>('SELECT * FROM drafts WHERE id = ? COLLATE NOCASE', [id]);
   });
 
   find_public = safe(async (reference: string) => {
-    return this.database.get<DraftEntityType>('SELECT * FROM drafts WHERE (id = ? OR slug = ?) AND deleted_at IS NULL AND disabled_at IS NULL', [reference, reference]);
+    return this.database.get<DraftEntityType>('SELECT * FROM drafts WHERE (id = ? COLLATE NOCASE OR slug = ?) AND deleted_at IS NULL AND disabled_at IS NULL', [reference, reference]);
   });
 
   find_by_slug = safe(async (slug: string) => {
@@ -21,7 +24,7 @@ class DraftsRepository extends Repository<DraftEntityType> {
   });
 
   find_owned = safe(async (id: string, account_id: string) => {
-    return this.database.get<DraftEntityType>('SELECT * FROM drafts WHERE id = ? AND account_id = ? AND deleted_at IS NULL AND disabled_at IS NULL', [id, account_id]);
+    return this.database.get<DraftEntityType>('SELECT * FROM drafts WHERE id = ? COLLATE NOCASE AND account_id = ? AND deleted_at IS NULL AND disabled_at IS NULL', [id, account_id]);
   });
 
   find_by_account = safe(async (account_id: string) => {
@@ -46,15 +49,13 @@ class DraftsRepository extends Repository<DraftEntityType> {
   remove = safe(async (id: string, account_id: string) => {
     const timestamp = this.timestamp();
 
-    const { meta } = await this.database.run('UPDATE drafts SET deleted_at = ?, slug = NULL, updated_at = ? WHERE id = ? AND account_id = ? AND deleted_at IS NULL', [timestamp, timestamp, id, account_id]);
-    return meta.changes > 0;
+    return this.database.get<Pick<DraftEntityType, 'id'>>('UPDATE drafts SET deleted_at = ?, slug = NULL, updated_at = ? WHERE id = ? COLLATE NOCASE AND account_id = ? AND deleted_at IS NULL RETURNING id', [timestamp, timestamp, id, account_id]);
   });
 
   disable = safe(async (id: string, reason: string) => {
     const timestamp = this.timestamp();
 
-    const { meta } = await this.database.run('UPDATE drafts SET disabled_at = ?, disabled_reason = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL', [timestamp, reason, timestamp, id]);
-    return meta.changes > 0;
+    return this.database.get<Pick<DraftEntityType, 'id'>>('UPDATE drafts SET disabled_at = ?, disabled_reason = ?, updated_at = ? WHERE id = ? COLLATE NOCASE AND deleted_at IS NULL RETURNING id', [timestamp, reason, timestamp, id]);
   });
 
   list_with_stats = safe(async (account_id: string) => {

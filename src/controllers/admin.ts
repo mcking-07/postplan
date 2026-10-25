@@ -140,10 +140,11 @@ class AdminController {
     const audit_service = this.get_audit_service();
 
     logger.info(`disabling draft [${draft_id}]`);
-    await drafts_service.disable(draft_id, reason);
+    const disabled = await drafts_service.disable(draft_id, reason);
+    if (!disabled) return context.redirect('/admin');
 
     schedule(context, audit_service.record({
-      account_id: admin.id, action: 'draft.disable', resource_type: 'draft', resource_id: draft_id, metadata: { reason },
+      account_id: admin.id, action: 'draft.disable', resource_type: 'draft', resource_id: disabled.id, metadata: { reason },
       source_ip: context.req.header('x-real-ip') ?? context.req.header('cf-connecting-ip'), user_agent: context.req.header('user-agent'),
     }), 'draft disable audit');
 

@@ -29,7 +29,7 @@ describe('worker uploads', () => {
     expect(create_response.status).toBe(201);
     const created = await create_response.json() as { ok: boolean; draftId: string; versionId: string; versionNumber: number; requestId: string; publicUrl: string; rawUrl: string; versionUrl: string; title: string; warnings: string[]; pages: unknown[] };
     expect(created).toEqual(expect.objectContaining({ ok: true, created: true, unchanged: false, versionNumber: 1, title: 'Integration Plan', warnings: [], account: { id: account_id, name: 'upload-flow@example.com' }, contentHash: expect.stringMatching(/^[0-9a-f]{64}$/), totalBytes: new TextEncoder().encode(html).byteLength }));
-    expect(created.draftId).toMatch(/^[A-Za-z0-9_-]{12}$/);
+    expect(created.draftId).toMatch(/^[0-9a-z]{12}$/);
     expect(created.versionId).toMatch(/^[A-Za-z0-9_-]{12}$/);
     expect(created.requestId).toMatch(/^[0-9a-f-]{36}$/);
     expect(created.publicUrl).toBe(`http://localhost:9057/d/${created.draftId}`);
@@ -97,7 +97,7 @@ describe('worker uploads', () => {
     const { drafts } = create_repositories();
     const [disable_error, disabled] = await drafts.disable(created.draftId, 'integration test');
     expect(disable_error).toBeNull();
-    expect(disabled).toBe(true);
+    expect(disabled).toEqual({ id: created.draftId });
 
     const blocked_response = await exports.default.fetch('http://localhost/api/uploads', {
       method: 'POST', headers, body: JSON.stringify({ html: updated_html, draftId: created.draftId }),
@@ -172,6 +172,34 @@ describe('worker uploads', () => {
     const delete_response = await exports.default.fetch(`http://localhost/api/drafts/${created.draftId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     expect(delete_response.status).toBe(200);
     expect((await upload(rival_token, { html: page('rival'), slug: 'new-plan' })).status).toBe(201);
+
+    const legacy = 'LegacyCase_1';
+    const lower = legacy.toLowerCase();
+    const timestamp = new Date().toISOString();
+    await env.DATABASE.prepare('INSERT INTO drafts (id, account_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)').bind(legacy, account_id, 'Legacy', timestamp, timestamp).run();
+    await expect(env.DATABASE.prepare('INSERT INTO drafts (id, account_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)').bind(lower, account_id, 'Clash', timestamp, timestamp).run()).rejects.toThrow();
+
+    expect((await upload(token, { html: page('legacy one'), draftId: legacy })).status).toBe(200);
+    const legacy_rename = await upload(token, { html: page('legacy two'), draftId: lower, slug: 'legacy-plan' });
+    expect(legacy_rename.status).toBe(200);
+    await expect(legacy_rename.json()).resolves.toMatchObject({ draftId: legacy, slug: 'legacy-plan', versionNumber: 2, versionUrl: `http://localhost:9057/d/${legacy}/version/2` });
+    const legacy_update = await upload(token, { html: page('legacy three'), draftId: lower, slug: 'legacy-plan' });
+    expect(legacy_update.status).toBe(200);
+    await expect(legacy_update.json()).resolves.toMatchObject({ draftId: legacy, versionNumber: 3 });
+
+    const { results: legacy_versions } = await env.DATABASE.prepare('SELECT draft_id, object_key FROM draft_versions WHERE draft_id = ? COLLATE NOCASE').bind(lower).all<{ draft_id: string; object_key: string; }>();
+    expect(legacy_versions).toHaveLength(3);
+    expect(legacy_versions.every(version => version.draft_id === legacy && version.object_key.startsWith(`drafts/${legacy}/`))).toBe(true);
+
+    const legacy_response = await exports.default.fetch(`http://localhost/d/${lower}`);
+    expect(legacy_response.status).toBe(200);
+    expect(legacy_response.headers.get('x-postplan-draft-id')).toBe(legacy);
+    await expect(legacy_response.text()).resolves.toBe(page('legacy three'));
+
+    const legacy_delete = await exports.default.fetch(`http://localhost/api/drafts/${lower}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    expect(legacy_delete.status).toBe(200);
+    expect((await exports.default.fetch(`http://localhost/d/${legacy}`)).status).toBe(404);
+    await expect(env.DATABASE.prepare('SELECT resource_id FROM audit_log WHERE action = ? AND resource_id = ? COLLATE NOCASE').bind('draft.delete', lower).first('resource_id')).resolves.toBe(legacy);
   });
 
   it('checks uploads without writing', async () => {

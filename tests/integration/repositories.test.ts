@@ -53,14 +53,23 @@ describe('D1 repositories', () => {
     const [create_error, draft_id] = await drafts.create({ account_id: account, title: 'Disabled draft' });
     expect(create_error).toBeNull();
     const draft = require_value(draft_id);
+    expect(draft).toMatch(/^[0-9a-z]{12}$/);
 
-    const [disable_error, disabled] = await drafts.disable(draft, 'moderation');
+    const [owned_error, owned] = await drafts.find_owned(draft.toUpperCase(), account);
+    expect(owned_error).toBeNull();
+    expect(owned?.id).toBe(draft);
+
+    const [disable_error, disabled] = await drafts.disable(draft.toUpperCase(), 'moderation');
     expect(disable_error).toBeNull();
-    expect(disabled).toBe(true);
+    expect(disabled).toEqual({ id: draft });
 
     const [find_error, found] = await drafts.find_owned(draft, account);
     expect(find_error).toBeNull();
     expect(found).toBeNull();
+
+    const [by_id_error, by_id] = await drafts.find_by_id(draft.toUpperCase());
+    expect(by_id_error).toBeNull();
+    expect(by_id?.id).toBe(draft);
 
     const [public_error, public_draft] = await drafts.find_public(draft);
     expect(public_error).toBeNull();
