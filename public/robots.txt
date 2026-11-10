@@ -1,8 +1,6 @@
+# cloudflare prepends its managed robots.txt, only disallow paths here.
 User-agent: *
-Disallow: /
-Allow: /$
-Allow: /llms.txt
-Allow: /skills/
-Allow: /sitemap.xml
+Disallow: /d/
+Disallow: /api/
 
 Sitemap: https://postplan.mcking.in/sitemap.xml
