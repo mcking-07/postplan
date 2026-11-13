@@ -9,23 +9,23 @@
       "version": "1.0.0",
       "license": "MIT",
       "dependencies": {
-        "hono": "4.13.13",
+        "hono": "4.13.16",
         "nanoid": "6.0.2",
         "parse5": "8.0.1",
         "safe-wrapper": "4.2.0"
       },
       "devDependencies": {
         "@cloudflare/vitest-pool-workers": "0.22.0",
-        "@cloudflare/workers-types": "latest",
+        "@cloudflare/workers-types": "*",
         "@eslint/js": "10.0.1",
-        "@types/node": "latest",
+        "@types/node": "*",
         "eslint": "10.9.0",
         "globals": "17.4.0",
         "jiti": "2.6.1",
         "typescript": "5.8.3",
         "typescript-eslint": "8.67.0",
         "vitest": "4.1.11",
-        "wrangler": "latest"
+        "wrangler": "*"
       }
     },
     "node_modules/@cloudflare/kv-asset-handler": {
@@ -2819,9 +2819,9 @@
       }
     },
     "node_modules/hono": {
-      "version": "4.13.13",
-      "resolved": "https://registry.npmjs.org/hono/-/hono-4.13.13.tgz",
-      "integrity": "sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA==",
+      "version": "4.13.16",
+      "resolved": "https://registry.npmjs.org/hono/-/hono-4.13.16.tgz",
+      "integrity": "sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A==",
       "license": "MIT",
       "engines": {
         "node": ">=16.9.0"
